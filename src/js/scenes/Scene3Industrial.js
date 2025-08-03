@@ -4,6 +4,8 @@
  * USING EXACT SAME STRUCTURE AS SCENE 1
  */
 
+import { ColorPalette } from '../utils/ColorPalette.js';
+
 export class Scene3Industrial {
     constructor(sceneGroup, data, parameters) {
         this.sceneGroup = sceneGroup;

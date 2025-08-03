@@ -3,6 +3,8 @@
  * Shows the economic "dark ages" - sparse data, slow growth, high volatility
  */
 
+import { ColorPalette } from '../utils/ColorPalette.js';
+
 export class Scene1Medieval {
     // Static flag to track if scene has been rendered before
     static hasBeenRendered = false;
@@ -91,7 +93,7 @@ export class Scene1Medieval {
         }
         
         // Chart setup - 50% taller Y-axis for better visualization
-        const chartHeight = (this.height - 150) * 1.3;
+        const chartHeight = (this.height - 150) * 1.15;
         
         // Determine actual data range (not theoretical)
         const allDataYears = [...populationData.map(d => d.year), ...gdpData.map(d => d.year)];
@@ -232,8 +234,17 @@ export class Scene1Medieval {
     }
     
     addInteractiveStoryPoints(isPrimaryPopulation) {
-        // Medieval specific historical events
+        // Enhanced medieval historical events with rich storytelling
         const historicalEvents = [
+            {
+                year: 1215,
+                event: 'Magna Carta',
+                story: 'The Magna Carta, signed in 1215, established the principle that even the king was subject to the law. This foundational document began the long process of establishing property rights and economic freedoms in England.',
+                story2: 'While initially focused on baronial rights, the Magna Carta\'s principles of due process and property protection would eventually extend to all English subjects, creating a more stable environment for economic activity and trade.',
+                economicEffect: 'Established property rights and legal protections for merchants and landowners. Reduced arbitrary taxation and confiscation, encouraging investment and trade. Created foundation for English common law.',
+                longTermImpact: 'The legal framework established by Magna Carta provided the foundation for England\'s later economic success, ensuring property rights and contract enforcement that enabled market development.',
+                y: 180
+            },
             {
                 year: 1348,
                 event: 'Black Death',
@@ -241,7 +252,6 @@ export class Scene1Medieval {
                 story2: 'With fewer workers available, wages rose dramatically while land values fell. The feudal system began to crumble as peasants gained bargaining power. The economic shock would take generations to recover from, but ultimately accelerated the transition from feudalism to a more market-based economy.',
                 economicEffect: 'Population dropped from ~4.5 million to ~2.5 million. Wages increased by 200-300% due to labor shortages. Land values fell by 40-60% as demand collapsed.',
                 longTermImpact: 'Labor shortages forced technological innovation and efficiency improvements. The breakdown of feudal relationships accelerated the rise of wage labor and market economies.',
-                impact: 'negative',
                 y: 150
             },
             {
@@ -251,7 +261,6 @@ export class Scene1Medieval {
                 story2: 'While the revolt was ultimately suppressed, it demonstrated the growing economic power and political consciousness of the peasant class. The government was forced to make concessions, including the abolition of the poll tax and improvements in labor conditions.',
                 economicEffect: 'Government abolished poll tax, reducing fiscal pressure on peasants. Labor regulations were relaxed, allowing freer movement of workers. Land rents stabilized as landlords feared further unrest.',
                 longTermImpact: 'The revolt marked the beginning of the end of serfdom in England. Peasants gained greater economic freedom and bargaining power, accelerating the transition to wage labor.',
-                impact: 'social',
                 y: 200
             },
             {
@@ -261,8 +270,16 @@ export class Scene1Medieval {
                 story2: 'With military spending reduced, resources could be redirected to domestic development. The loss of French territories forced England to focus on internal economic growth and trade with other European nations.',
                 economicEffect: 'Military spending dropped from ~15% to ~5% of GDP. Trade with continental Europe expanded as merchants sought new markets. Domestic manufacturing grew to replace lost French imports.',
                 longTermImpact: 'The end of continental military adventures allowed England to focus on maritime trade and exploration, laying the groundwork for the Age of Discovery and eventual global empire.',
-                impact: 'positive',
                 y: 120
+            },
+            {
+                year: 1475,
+                event: 'Wool Trade Boom',
+                story: 'The late 15th century saw England\'s wool trade reach its medieval peak, with English wool becoming the most sought-after in Europe. This trade boom created significant wealth and transformed the economic landscape.',
+                story2: 'The wool trade financed the construction of magnificent churches, expanded merchant networks, and created a new class of wealthy wool merchants. This commercial success laid the groundwork for England\'s future economic expansion.',
+                economicEffect: 'Wool exports increased 300% from 1400 levels. Merchant wealth grew dramatically, financing urban development. Trade networks expanded across Europe, creating new economic opportunities.',
+                longTermImpact: 'The wool trade success demonstrated England\'s potential as a trading nation and created the merchant class that would later finance exploration and colonial ventures.',
+                y: 90
             }
         ];
         
@@ -272,26 +289,22 @@ export class Scene1Medieval {
             return event.year >= domain[0] && event.year <= domain[1];
         });
         
-        // Add event markers using original styling
-        relevantEvents.forEach((event, i) => {
-            const x = this.xScale(event.year);
-            let y;
-            if (i === 0) { // Black Death - move down
-                y = 150;
-            } else if (i === 1) { // Peasants' Revolt - move down slightly  
-                y = 200;
-            } else { // End of Hundred Yrs War - move up
-                y = 120;
-            }
+        // Add event markers with dynamic positioning and enhanced styling
+        relevantEvents.forEach((historicalEvent, i) => {
+            const x = this.xScale(historicalEvent.year);
+            // Dynamic Y positioning based on event type and index for better visual distribution
+            const baseY = 140;
+            const yOffset = (i % 2 === 0) ? 0 : 60; // Alternate high/low positioning
+            const y = baseY + yOffset;
             
-            // Add vertical line using original color
+            // Add vertical line using vibrant color
             this.sceneGroup.append('line')
                 .attr('class', 'event-line')
                 .attr('x1', x)
                 .attr('y1', y)
                 .attr('x2', x)
                 .attr('y2', this.height - 95) // Go all the way to X-axis (economic structure area)
-                .attr('stroke', this.getEventColor(event.impact))
+                .attr('stroke', this.getEventColor(i))
                 .attr('stroke-width', 2)
                 .attr('stroke-dasharray', '5,5')
                 .style('opacity', this.animationDuration > 0 ? 0 : 1)
@@ -300,37 +313,68 @@ export class Scene1Medieval {
                 .duration(500)
                 .style('opacity', 0.6);
             
-            // Add event circle using original color
-            this.sceneGroup.append('circle')
+            // Add enhanced event circle with glow effect
+            const eventCircle = this.sceneGroup.append('circle')
                 .attr('class', 'event-marker')
                 .attr('cx', x)
                 .attr('cy', y)
-                .attr('r', 6)
-                .attr('fill', this.getEventColor(event.impact))
+                .attr('r', 0) // Start small for animation
+                .attr('fill', this.getEventColor(i))
                 .attr('stroke', 'white')
                 .attr('stroke-width', 2)
                 .style('cursor', 'pointer')
                 .style('opacity', this.animationDuration > 0 ? 0 : 1)
-                .on('mouseover', (event) => this.showEventTooltip(event, event))
-                .on('mouseout', () => this.hideTooltip())
-                .on('click', (event) => this.showEventStory(event))
-                .transition()
+                .style('filter', 'drop-shadow(0 0 4px ' + this.getEventColor(i) + ')') // Add glow effect
+                .on('mouseover', (event) => {
+                    this.showEventTooltip(event, historicalEvent);
+                    eventCircle.transition().duration(200).attr('r', 8); // Expand on hover
+                })
+                .on('mouseout', () => {
+                    this.hideTooltip();
+                    eventCircle.transition().duration(200).attr('r', 6); // Return to normal size
+                })
+                .on('click', (event) => this.showEventStory(historicalEvent));
+            
+            // Animate circle appearance
+            eventCircle.transition()
                 .delay(this.animationDuration * 3 + i * 300)
                 .duration(500)
+                .attr('r', 6)
                 .style('opacity', 1);
             
-            // Add event label
-            this.sceneGroup.append('text')
+            // Add enhanced event label with background
+            const labelGroup = this.sceneGroup.append('g')
+                .attr('class', 'event-label-group')
+                .style('opacity', this.animationDuration > 0 ? 0 : 1);
+            
+            // Add background rectangle for better readability
+            const labelText = `${historicalEvent.year} - ${historicalEvent.event}`;
+            const labelWidth = labelText.length * 6; // Approximate width
+            const labelHeight = 16;
+            
+            labelGroup.append('rect')
+                .attr('x', x + 8)
+                .attr('y', y - 22)
+                .attr('width', labelWidth + 8)
+                .attr('height', labelHeight)
+                .attr('fill', 'rgba(255, 255, 255, 0.9)')
+                .attr('stroke', this.getEventColor(i))
+                .attr('stroke-width', 1)
+                .attr('rx', 3);
+            
+            // Add text label
+            labelGroup.append('text')
                 .attr('class', 'event-label')
-                .attr('x', x + 10)
+                .attr('x', x + 12)
                 .attr('y', y - 10)
                 .attr('text-anchor', 'start')
-                .style('font-size', '11px')
+                .style('font-size', '10px')
                 .style('font-weight', 'bold')
-                .style('fill', this.getEventColor(event.impact))
-                .style('opacity', this.animationDuration > 0 ? 0 : 1)
-                .text(`${event.year} - ${event.event}`)
-                .transition()
+                .style('fill', this.getEventColor(i))
+                .text(labelText);
+            
+            // Animate label appearance
+            labelGroup.transition()
                 .delay(this.animationDuration * 3 + i * 300 + 200)
                 .duration(500)
                 .style('opacity', 1);
@@ -349,7 +393,7 @@ export class Scene1Medieval {
             .style('font-weight', 'bold')
             .style('fill', '#1f4e79')
             .style('opacity', 0)
-            .text('Medieval Times (1260-1500)')
+            .text('Medieval Times (1209-1500)')
             .transition()
             .duration(500)
             .style('opacity', 1);
@@ -442,9 +486,9 @@ export class Scene1Medieval {
         const industryGroup = this.sceneGroup.append('g')
             .attr('class', 'industry-breakdown');
         
-        // Draw each industry layer
+        // Draw each industry layer with colors that match the CSS
         const industryNames = ['agriculture', 'crafts', 'services'];
-        const industryColors = ['#8B4513', '#4682B4', '#9370DB'];  // Brown, Steel Blue, Medium Purple
+        const industryColors = ['#8B4513', '#4682B4', '#9370DB'];  // Brown, Blue, Purple
         const industryFullNames = ['Agriculture', 'Crafts & Trade', 'Services'];
         
         stackedData.forEach((layer, i) => {
@@ -531,23 +575,23 @@ export class Scene1Medieval {
         const periodData = {
             '1200s': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 85, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 10, color: '#4682B4' },
-                { key: 'services', name: 'Services', percentage: 5, color: '#9370DB' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 10, color: '#D2691E' },
+                { key: 'services', name: 'Services', percentage: 5, color: '#CD853F' }
             ],
             '1300s': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 80, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 15, color: '#4682B4' },
-                { key: 'services', name: 'Services', percentage: 5, color: '#9370DB' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 15, color: '#D2691E' },
+                { key: 'services', name: 'Services', percentage: 5, color: '#CD853F' }
             ],
             '1400s': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 75, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 18, color: '#4682B4' },
-                { key: 'services', name: 'Services', percentage: 7, color: '#9370DB' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 18, color: '#D2691E' },
+                { key: 'services', name: 'Services', percentage: 7, color: '#CD853F' }
             ],
             '1500s': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 70, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 20, color: '#4682B4' },
-                { key: 'services', name: 'Services', percentage: 10, color: '#9370DB' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 20, color: '#D2691E' },
+                { key: 'services', name: 'Services', percentage: 10, color: '#CD853F' }
             ]
         };
         
@@ -555,11 +599,14 @@ export class Scene1Medieval {
     }
     
     addIndustryLegend(startY) {
-        const industries = [
-            { name: 'Agriculture', color: '#8B4513' },
-            { name: 'Crafts & Trade', color: '#4682B4' },
-            { name: 'Services', color: '#9370DB' }
-        ];
+        // Use the same colors as the CSS for consistency (these match what's actually displayed)
+        const industryColors = ['#8B4513', '#4682B4', '#9370DB'];  // Brown, Blue, Purple
+        const industryNames = ['Agriculture', 'Crafts & Trade', 'Services'];
+        
+        const industries = industryNames.map((name, i) => ({
+            name: name,
+            color: industryColors[i]
+        }));
         
         industries.forEach((industry, i) => {
             // Center the legend under the chart
@@ -597,43 +644,142 @@ export class Scene1Medieval {
         });
     }
     
-    getEventColor(impact) {
-        const colors = {
-            'devastating': '#d32f2f',
-            'social': '#f57c00',
-            'recovery': '#388e3c',
-            'positive': '#1976d2',
-            'negative': '#d32f2f'
-        };
-        return colors[impact] || '#666';
+    getEventColor(eventIndex) {
+        // Use shared color palette for consistency across scenes
+        return ColorPalette.getEventColor(eventIndex);
+    }
+    
+    getPopulationForYear(year) {
+        const dataPoint = this.medievalData.data.find(d => d.year === year);
+        return dataPoint ? dataPoint.population : null;
+    }
+    
+    getGDPForYear(year) {
+        const dataPoint = this.medievalData.data.find(d => d.year === year);
+        return dataPoint ? dataPoint.gdpReal : null;
+    }
+    
+    estimatePopulation(year) {
+        // Medieval population estimates
+        if (year <= 1250) return 3500;
+        if (year <= 1300) return 4000;
+        if (year <= 1350) return 2500; // Black Death impact
+        if (year <= 1400) return 3000;
+        if (year <= 1450) return 3500;
+        if (year <= 1500) return 4300;
+        return 4500;
+    }
+    
+    getEconomicContext(year) {
+        // Medieval period context (1209-1500)
+        if (year <= 1250) {
+            return {
+                period: 'Early Medieval England',
+                structure: 'Feudal agricultural economy with limited trade and sparse economic data',
+                industries: 'Agriculture (85%), Basic crafts (10%), Trade and services (5%)',
+                social: 'Feudal society, manorial system, subsistence farming, high mortality rates'
+            };
+        } else if (year <= 1300) {
+            return {
+                period: 'High Medieval Growth',
+                structure: 'Agricultural expansion with emerging trade networks and urban development',
+                industries: 'Agriculture (80%), Crafts and trade (15%), Services (5%)',
+                social: 'Population growth, expanding towns, guild system developing, improved farming'
+            };
+        } else if (year <= 1350) {
+            return {
+                period: 'Black Death Crisis',
+                structure: 'Economic collapse following catastrophic population loss',
+                industries: 'Agriculture (75%), Crafts and trade (20%), Services (5%)',
+                social: 'Massive population decline, labor shortages, social disruption, economic chaos'
+            };
+        } else if (year <= 1400) {
+            return {
+                period: 'Post-Plague Recovery',
+                structure: 'Gradual economic recovery with labor shortages driving change',
+                industries: 'Agriculture (70%), Crafts and trade (25%), Services (5%)',
+                social: 'Labor shortages, rising wages, weakening feudalism, peasant gains'
+            };
+        } else {
+            return {
+                period: 'Late Medieval Transformation',
+                structure: 'Transition from feudalism to early capitalism and market economy',
+                industries: 'Agriculture (65%), Crafts and trade (30%), Services (5%)',
+                social: 'Rising merchant class, wool trade expansion, early banking, social mobility'
+            };
+        }
     }
     
     showEnhancedTooltip(event, d, isPrimaryPopulation) {
-        const tooltip = d3.select('#tooltip');
-        const population = d.population || d.value;
-        const gdp = d.gdpReal || d.value;
+        const economicContext = this.getEconomicContext(d.year);
+        const indicator = isPrimaryPopulation ? 'Population' : 'GDP';
         
-        let content = `
-            <div class="tooltip-content">
-                <strong>Year: ${d.year}</strong><br>
-                ${isPrimaryPopulation ? 
-                    `Population: ${d3.format(',')(population)} thousand` :
-                    `GDP: £${d3.format('.0f')(gdp)}M (2013 prices)`
-                }
-        `;
+        let tooltipContent = `<div style="border-bottom: 1px solid #444; margin-bottom: 8px; padding-bottom: 6px;">`;
+        tooltipContent += `<strong style="color: #d4a574; font-size: 15px;">${d.year} - ${economicContext.period}</strong></div>`;
         
-        if (population && gdp) {
-            const gdpPerCapita = (gdp * 1000000) / (population * 1000); // Convert to same units
-            content += `<br>GDP per capita: £${d3.format(',')(Math.round(gdpPerCapita))}`;
+        // Get both population and GDP data for this year
+        const populationForYear = this.getPopulationForYear(d.year);
+        const gdpForYear = this.getGDPForYear(d.year);
+        
+        // Always show population
+        if (populationForYear) {
+            const popThousands = populationForYear.toFixed(0);
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>Population:</strong> ${popThousands} thousand</div>`;
+        } else {
+            const estimatedPop = this.estimatePopulation(d.year);
+            const popThousands = estimatedPop.toFixed(0);
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>Population:</strong> ${popThousands} thousand (estimated)</div>`;
         }
         
-        content += '</div>';
+        // Always show GDP if available
+        if (gdpForYear) {
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>GDP:</strong> £${gdpForYear.toFixed(1)}M (2013 prices)</div>`;
+            
+            // Calculate proper GDP per capita
+            const population = populationForYear || this.estimatePopulation(d.year);
+            const gdpPerCapita = (gdpForYear * 1000000) / (population * 1000);
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>GDP per capita:</strong> £${gdpPerCapita.toFixed(0)}</div>`;
+        } else {
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>GDP:</strong> Not available for this period</div>`;
+        }
         
-        tooltip
-            .style('opacity', 1)
-            .html(content)
-            .style('left', (event.pageX + 10) + 'px')
-            .style('top', (event.pageY - 10) + 'px');
+        tooltipContent += `<div style="background: rgba(100,50,0,0.3); padding: 6px; border-radius: 3px; margin-bottom: 8px;">`;
+        tooltipContent += `<strong style="color: #FFB74D;">Economic Structure:</strong><br/>`;
+        tooltipContent += `<small>${economicContext.structure}</small></div>`;
+        
+        tooltipContent += `<div style="background: rgba(0,50,100,0.3); padding: 6px; border-radius: 3px; margin-bottom: 8px;">`;
+        tooltipContent += `<strong style="color: #90CAF9;">Key Industries:</strong><br/>`;
+        tooltipContent += `<small>${economicContext.industries}</small></div>`;
+        
+        tooltipContent += `<div style="background: rgba(50,0,100,0.3); padding: 6px; border-radius: 3px; margin-bottom: 8px;">`;
+        tooltipContent += `<strong style="color: #CE93D8;">Social Context:</strong><br/>`;
+        tooltipContent += `<small>${economicContext.social}</small></div>`;
+        
+        tooltipContent += `<div style="font-size: 11px; opacity: 0.8; text-align: center;">`;
+        tooltipContent += `<em>Click data point for detailed analysis</em></div>`;
+        
+        const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
+        tooltip.enter().append('div').attr('class', 'tooltip')
+            .merge(tooltip)
+            .style('position', 'absolute')
+            .style('background', 'rgba(0, 0, 0, 0.9)')
+            .style('color', 'white')
+            .style('padding', '12px')
+            .style('border-radius', '8px')
+            .style('font-size', '13px')
+            .style('pointer-events', 'none')
+            .style('z-index', 1000)
+            .style('box-shadow', '0 6px 20px rgba(0,0,0,0.4)')
+            .style('border', '1px solid #333')
+            .style('max-width', '320px')
+            .style('line-height', '1.5')
+            .html(tooltipContent)
+            .style('left', Math.min(event.pageX + 15, window.innerWidth - 340) + 'px')
+            .style('top', Math.max(event.pageY - 10, 10) + 'px')
+            .style('opacity', 0)
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
     }
     
     showDetailedStory(event, d, isPrimaryPopulation) {
@@ -642,49 +788,115 @@ export class Scene1Medieval {
     }
     
     showIndustryBreakdownTooltip(event, data, colors, names) {
-        const tooltip = d3.select('#tooltip');
+        const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
+        tooltip.enter().append('div').attr('class', 'tooltip')
+            .merge(tooltip)
+            .style('position', 'absolute')
+            .style('background', 'rgba(0, 0, 0, 0.9)')
+            .style('color', 'white')
+            .style('padding', '10px')
+            .style('border-radius', '6px')
+            .style('font-size', '12px')
+            .style('pointer-events', 'none')
+            .style('z-index', 1000)
+            .style('box-shadow', '0 4px 12px rgba(0,0,0,0.3)')
+            .style('border', '1px solid #333')
+            .style('max-width', '200px')
+            .style('line-height', '1.4');
         
-        const content = `
-            <div class="tooltip-content">
-                <strong>Year: ${data.year}</strong><br>
-                <span style="color: ${colors[0]}">${names[0]}: ${data.agriculture}%</span><br>
-                <span style="color: ${colors[1]}">${names[1]}: ${data.crafts}%</span><br>
-                <span style="color: ${colors[2]}">${names[2]}: ${data.services}%</span>
-            </div>
-        `;
+        let tooltipContent = `<div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #444; padding-bottom: 4px;">`;
+        tooltipContent += `Year: ${data.year}</div>`;
+        tooltipContent += `<div style="margin-bottom: 4px;"><span style="color: ${colors[0]}">●</span> ${names[0]}: ${data.agriculture}%</div>`;
+        tooltipContent += `<div style="margin-bottom: 4px;"><span style="color: ${colors[1]}">●</span> ${names[1]}: ${data.crafts}%</div>`;
+        tooltipContent += `<div style="margin-bottom: 4px;"><span style="color: ${colors[2]}">●</span> ${names[2]}: ${data.services}%</div>`;
         
-        tooltip
-            .style('opacity', 1)
-            .html(content)
-            .style('left', (event.pageX + 10) + 'px')
-            .style('top', (event.pageY - 10) + 'px');
+        tooltip.html(tooltipContent)
+            .style('left', Math.min(event.pageX + 15, window.innerWidth - 220) + 'px')
+            .style('top', Math.max(event.pageY - 10, 10) + 'px')
+            .style('opacity', 0)
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
     }
     
     hideTooltip() {
-        d3.select('#tooltip')
-            .style('opacity', 0);
+        d3.selectAll('.tooltip')
+            .transition()
+            .duration(200)
+            .style('opacity', 0)
+            .remove();
     }
     
-    showEventTooltip(event, eventData) {
-        const tooltip = d3.select('#tooltip');
+    showEventTooltip(event, historicalEvent) {
+        const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
+        tooltip.enter().append('div').attr('class', 'tooltip')
+            .merge(tooltip)
+            .style('position', 'absolute')
+            .style('background', 'rgba(0, 0, 0, 0.8)')
+            .style('color', 'white')
+            .style('padding', '8px')
+            .style('border-radius', '4px')
+            .style('font-size', '12px')
+            .style('pointer-events', 'none')
+            .style('z-index', 1000)
+            .style('box-shadow', '0 4px 12px rgba(0,0,0,0.3)')
+            .style('border', '2px solid white')
+            .style('max-width', '250px')
+            .style('line-height', '1.4');
         
-        const content = `
-            <div class="tooltip-content">
-                <strong>${eventData.year} - ${eventData.event}</strong><br>
-                <em>${eventData.story}</em>
-            </div>
-        `;
+        let tooltipContent = `<div style="font-weight: bold; margin-bottom: 6px;">${historicalEvent.year} - ${historicalEvent.event}</div>`;
+        tooltipContent += `<div style="margin-bottom: 8px; font-size: 12px;">${historicalEvent.story}</div>`;
+        tooltipContent += `<div style="font-size: 11px; font-style: italic; opacity: 0.9;">Impact: ${historicalEvent.economicEffect}</div>`;
+        tooltipContent += `<div style="text-align: center; margin-top: 6px; font-size: 10px; opacity: 0.8;">Click event marker for full story</div>`;
         
-        tooltip
-            .style('opacity', 1)
-            .html(content)
-            .style('left', (event.pageX + 10) + 'px')
-            .style('top', (event.pageY - 10) + 'px');
+        tooltip.html(tooltipContent)
+            .style('left', Math.min(event.pageX + 15, window.innerWidth - 270) + 'px')
+            .style('top', Math.max(event.pageY - 10, 10) + 'px')
+            .style('opacity', 0)
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
     }
     
-    showEventStory(event) {
+    showEventStory(historicalEvent) {
         // Scene-specific event story implementation
-        console.log('Event story clicked:', event);
+        console.log('Event story clicked:', historicalEvent);
+        
+        // Create a detailed story modal or enhanced tooltip
+        const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
+        tooltip.enter().append('div').attr('class', 'tooltip')
+            .merge(tooltip)
+            .style('position', 'absolute')
+            .style('background', 'rgba(0, 0, 0, 0.95)')
+            .style('color', 'white')
+            .style('padding', '15px')
+            .style('border-radius', '8px')
+            .style('font-size', '13px')
+            .style('pointer-events', 'none')
+            .style('z-index', 1000)
+            .style('box-shadow', '0 8px 25px rgba(0,0,0,0.5)')
+            .style('border', '2px solid #d4a574')
+            .style('max-width', '400px')
+            .style('line-height', '1.6');
+        
+        let storyContent = `<div style="border-bottom: 2px solid #d4a574; margin-bottom: 12px; padding-bottom: 8px;">`;
+        storyContent += `<strong style="color: #d4a574; font-size: 16px;">${historicalEvent.year} - ${historicalEvent.event}</strong></div>`;
+        storyContent += `<div style="margin-bottom: 12px; font-size: 14px;">${historicalEvent.story}</div>`;
+        storyContent += `<div style="margin-bottom: 12px; font-size: 14px;">${historicalEvent.story2}</div>`;
+        storyContent += `<div style="background: rgba(255,193,7,0.2); padding: 8px; border-radius: 4px; margin-bottom: 12px;">`;
+        storyContent += `<strong style="color: #FFC107;">Economic Impact:</strong><br/>`;
+        storyContent += `<small>${historicalEvent.economicEffect}</small></div>`;
+        storyContent += `<div style="background: rgba(76,175,80,0.2); padding: 8px; border-radius: 4px; margin-bottom: 12px;">`;
+        storyContent += `<strong style="color: #4CAF50;">Long-term Impact:</strong><br/>`;
+        storyContent += `<small>${historicalEvent.longTermImpact}</small></div>`;
+        
+        tooltip.html(storyContent)
+            .style('left', Math.min(window.innerWidth / 2 - 200, window.innerWidth - 420) + 'px')
+            .style('top', Math.max(window.innerHeight / 2 - 150, 20) + 'px')
+            .style('opacity', 0)
+            .transition()
+            .duration(300)
+            .style('opacity', 1);
     }
     
     renderStagnationStory() {

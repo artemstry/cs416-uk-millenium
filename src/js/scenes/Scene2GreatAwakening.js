@@ -4,6 +4,8 @@
  * USING EXACT SAME STRUCTURE AS SCENE 1
  */
 
+import { ColorPalette } from '../utils/ColorPalette.js';
+
 export class Scene2GreatAwakening {
     constructor(sceneGroup, data, parameters) {
         this.sceneGroup = sceneGroup;
@@ -279,19 +281,19 @@ export class Scene2GreatAwakening {
             return event.year >= domain[0] && event.year <= domain[1];
         });
         
-        // Add event markers using original styling
-        relevantEvents.forEach((event, i) => {
-            const x = this.xScale(event.year);
-            const y = event.y;
+        // Add event markers using vibrant colors
+        relevantEvents.forEach((historicalEvent, i) => {
+            const x = this.xScale(historicalEvent.year);
+            const y = historicalEvent.y;
             
-            // Add vertical line using original color
+            // Add vertical line using vibrant color
             this.sceneGroup.append('line')
                 .attr('class', 'event-line')
                 .attr('x1', x)
                 .attr('y1', y)
                 .attr('x2', x)
                 .attr('y2', this.height - 95) // Go all the way to X-axis (economic structure area)
-                .attr('stroke', this.getEventColor(event.impact))
+                .attr('stroke', this.getEventColor(i))
                 .attr('stroke-width', 2)
                 .attr('stroke-dasharray', '5,5')
                 .style('opacity', this.animationDuration > 0 ? 0 : 1)
@@ -300,18 +302,18 @@ export class Scene2GreatAwakening {
                 .duration(500)
                 .style('opacity', 0.6);
             
-            // Add event circle using original color
+            // Add event circle using vibrant color
             this.sceneGroup.append('circle')
                 .attr('class', 'event-marker')
                 .attr('cx', x)
                 .attr('cy', y)
                 .attr('r', 6)
-                .attr('fill', this.getEventColor(event.impact))
+                .attr('fill', this.getEventColor(i))
                 .attr('stroke', 'white')
                 .attr('stroke-width', 2)
                 .style('cursor', 'pointer')
                 .style('opacity', this.animationDuration > 0 ? 0 : 1)
-                .on('click', (event) => this.showEventStory(event))
+                .on('click', (event) => this.showEventStory(historicalEvent))
                 .transition()
                 .delay(this.animationDuration * 3 + i * 300)
                 .duration(500)
@@ -325,9 +327,9 @@ export class Scene2GreatAwakening {
                 .attr('text-anchor', 'start')
                 .style('font-size', '11px')
                 .style('font-weight', 'bold')
-                .style('fill', this.getEventColor(event.impact))
+                .style('fill', this.getEventColor(i))
                 .style('opacity', this.animationDuration > 0 ? 0 : 1)
-                .text(`${event.year} - ${event.event}`)
+                .text(`${historicalEvent.year} - ${historicalEvent.event}`)
                 .transition()
                 .delay(this.animationDuration * 3 + i * 300 + 200)
                 .duration(500)
@@ -560,15 +562,9 @@ export class Scene2GreatAwakening {
         });
     }
     
-    getEventColor(impact) {
-        const colors = {
-            'devastating': '#d32f2f',
-            'social': '#f57c00',
-            'recovery': '#388e3c',
-            'positive': '#1976d2',
-            'negative': '#d32f2f'
-        };
-        return colors[impact] || '#666';
+    getEventColor(eventIndex) {
+        // Use shared color palette for consistency across scenes
+        return ColorPalette.getEventColor(eventIndex);
     }
     
     showEnhancedTooltip(event, d, isPrimaryPopulation) {
