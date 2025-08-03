@@ -5,6 +5,28 @@
 
 import { ColorPalette } from './ColorPalette.js';
 
+/**
+ * Layout configuration for consistent positioning across scenes
+ */
+export const LayoutConfig = {
+    // Chart positioning
+    mainChartHeight: 0.65, // 65% of total height for main chart
+    economicStructureHeight: 0.15, // 15% of total height for economic structure
+    legendHeight: 0.05, // 5% of total height for legend
+    spacing: 0.15, // 15% of total height for spacing between elements
+    
+    // Economic structure positioning
+    economicStructureY: 0.75, // 75% down from top
+    legendY: 0.92, // 92% down from top
+    
+    // Event marker positioning
+    eventMarkerBaseY: 0.18, // 18% down from top
+    eventMarkerOffset: 0.08, // 8% offset for alternating markers
+    
+    // Chart margins
+    chartMargin: { top: 0.05, right: 0.02, bottom: 0.1, left: 0.08 }
+};
+
 export class SceneUtils {
     
     /**
@@ -22,7 +44,6 @@ export class SceneUtils {
         // X-axis
         const xAxis = d3.axisBottom(xScale)
             .tickFormat(d3.format('d'))
-            .tickSize(-chartHeight)
             .tickPadding(8);
         
         sceneGroup.append('g')
@@ -41,7 +62,6 @@ export class SceneUtils {
                 d3.format(',')(d) + 'k' : 
                 '£' + d3.format('.0f')(d) + 'M'
             )
-            .tickSize(-width)
             .tickPadding(8);
         
         sceneGroup.append('g')
@@ -73,7 +93,7 @@ export class SceneUtils {
             .attr('class', 'axis-label y-label')
             .attr('transform', 'rotate(-90)')
             .attr('x', -chartHeight / 2)
-            .attr('y', -50)
+            .attr('y', -70)
             .attr('text-anchor', 'middle')
             .style('font-size', '14px')
             .style('font-weight', 'bold')
@@ -94,8 +114,10 @@ export class SceneUtils {
      * @param {Object} yScale - D3 scale for Y-axis
      * @param {boolean} isPrimaryPopulation - Whether showing population or GDP data
      * @param {number} animationDuration - Animation duration in ms
+     * @param {Function} onDataPointHover - Callback for data point hover
+     * @param {Function} onDataPointClick - Callback for data point click
      */
-    static createMainTrendLine(sceneGroup, data, xScale, yScale, isPrimaryPopulation, animationDuration) {
+    static createMainTrendLine(sceneGroup, data, xScale, yScale, isPrimaryPopulation, animationDuration, onDataPointHover, onDataPointClick) {
         // Create line generator
         const line = d3.line()
             .x(d => xScale(d.year))
@@ -112,8 +134,8 @@ export class SceneUtils {
             .attr('d', line)
             .style('opacity', animationDuration > 0 ? 0 : 1)
             .transition()
-            .delay(animationDuration * 2)
-            .duration(1000)
+            .delay(animationDuration > 0 ? animationDuration : 0)
+            .duration(animationDuration > 0 ? 500 : 0)
             .style('opacity', 1);
         
         // Add data points
@@ -130,9 +152,26 @@ export class SceneUtils {
             .attr('stroke-width', 2)
             .style('cursor', 'pointer')
             .style('opacity', animationDuration > 0 ? 0 : 1)
+            .on('mouseover', function(event, d) {
+                if (onDataPointHover) {
+                    onDataPointHover(event, d, isPrimaryPopulation);
+                }
+                d3.select(this).transition().duration(200).attr('r', 6);
+            })
+            .on('mouseout', function() {
+                if (onDataPointHover) {
+                    onDataPointHover(null, null, null);
+                }
+                d3.select(this).transition().duration(200).attr('r', 4);
+            })
+            .on('click', function(event, d) {
+                if (onDataPointClick) {
+                    onDataPointClick(event, d, isPrimaryPopulation);
+                }
+            })
             .transition()
-            .delay((d, i) => animationDuration * 2 + i * 50)
-            .duration(300)
+            .delay((d, i) => animationDuration > 0 ? animationDuration + i * 25 : 0)
+            .duration(animationDuration > 0 ? 150 : 0)
             .attr('r', 4)
             .style('opacity', 1);
     }
@@ -155,20 +194,20 @@ export class SceneUtils {
             const y = baseY + yOffset;
             const markerColor = ColorPalette.getEventColor(i);
             
-            // Add vertical line
+            // Add vertical line - go to X-axis, not all the way down
             sceneGroup.append('line')
                 .attr('class', 'event-line')
                 .attr('x1', x)
                 .attr('y1', y)
                 .attr('x2', x)
-                .attr('y2', height - 95)
+                .attr('y2', height * 0.6) // Go to X-axis level, not bottom
                 .attr('stroke', markerColor)
                 .attr('stroke-width', 2)
                 .attr('stroke-dasharray', '5,5')
                 .style('opacity', animationDuration > 0 ? 0 : 1)
                 .transition()
-                .delay(animationDuration * 3 + i * 300)
-                .duration(500)
+                .delay(animationDuration > 0 ? animationDuration * 1.5 + i * 150 : 0)
+                .duration(animationDuration > 0 ? 250 : 0)
                 .style('opacity', 0.6);
             
             // Add event circle
@@ -194,8 +233,8 @@ export class SceneUtils {
                 .on('click', (e) => onEventClick(event, markerColor));
             
             eventCircle.transition()
-                .delay(animationDuration * 3 + i * 300)
-                .duration(500)
+                .delay(animationDuration > 0 ? animationDuration * 1.5 + i * 150 : 0)
+                .duration(animationDuration > 0 ? 250 : 0)
                 .attr('r', 6)
                 .style('opacity', 1);
             
@@ -246,8 +285,8 @@ export class SceneUtils {
             .text(labelText);
         
         labelGroup.transition()
-            .delay(animationDuration * 3 + index * 300 + 200)
-            .duration(500)
+            .delay(animationDuration > 0 ? animationDuration * 1.5 + index * 150 + 100 : 0)
+            .duration(animationDuration > 0 ? 250 : 0)
             .style('opacity', 1);
     }
     
@@ -396,5 +435,175 @@ export class SceneUtils {
             .duration(200)
             .style('opacity', 0)
             .remove();
+    }
+    
+    /**
+     * Calculate economic structure positioning based on total height
+     * @param {number} totalHeight - Total SVG height
+     * @returns {Object} Positioning object with breakdownY and legendY
+     */
+    static calculateEconomicStructurePosition(totalHeight) {
+        return {
+            breakdownY: Math.round(totalHeight * LayoutConfig.economicStructureY),
+            legendY: Math.round(totalHeight * LayoutConfig.legendY),
+            fluidHeight: Math.round(totalHeight * LayoutConfig.economicStructureHeight * 0.8)
+        };
+    }
+    
+    /**
+     * Calculate main chart height based on total height
+     * @param {number} totalHeight - Total SVG height
+     * @returns {number} Main chart height
+     */
+    static calculateMainChartHeight(totalHeight) {
+        return Math.round(totalHeight * LayoutConfig.mainChartHeight);
+    }
+    
+    /**
+     * Calculate event marker positioning based on total height
+     * @param {number} totalHeight - Total SVG height
+     * @param {number} index - Event index for alternating positioning
+     * @returns {Object} Positioning object with baseY and y
+     */
+    static calculateEventMarkerPosition(totalHeight, index) {
+        const baseY = Math.round(totalHeight * LayoutConfig.eventMarkerBaseY);
+        const yOffset = (index % 2 === 0) ? 0 : Math.round(totalHeight * LayoutConfig.eventMarkerOffset);
+        return {
+            baseY: baseY,
+            y: baseY + yOffset
+        };
+    }
+    
+    /**
+     * Create economic structure visualization
+     * @param {Object} sceneGroup - D3 selection for the scene group
+     * @param {number} width - Chart width
+     * @param {number} height - Chart height
+     * @param {Object} xScale - D3 scale for X-axis
+     * @param {Array} timePoints - Array of time points with industry data
+     * @param {number} animationDuration - Animation duration in ms
+     * @param {Function} onIndustryHover - Callback for industry hover
+     * @param {Function} onIndustryOut - Callback for industry mouse out
+     * @param {Function} createLegend - Function to create legend
+     */
+    static createEconomicStructure(sceneGroup, width, height, xScale, timePoints, animationDuration, onIndustryHover, onIndustryOut, createLegend) {
+        // Create a skinny industry breakdown visualization under the main chart
+        const breakdownHeight = 80;
+        const breakdownY = height - 100;  // Move down by 50 pixels
+        
+        // Add "Economic Structure" header
+        sceneGroup.append('text')
+            .attr('x', width / 2)
+            .attr('y', breakdownY - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .style('fill', '#333')
+            .text('Economic Structure');
+        
+        if (timePoints.length === 0) return;
+        
+        // Create a single fluid industry visualization - taller and more detailed
+        const fluidHeight = 60;
+        
+        // Create stacked area chart using D3's stack generator
+        const stack = d3.stack()
+            .keys(['agriculture', 'crafts', 'services']);
+        
+        const stackedData = stack(timePoints);
+        
+        // Create area generator
+        const area = d3.area()
+            .x(d => xScale(d.data.year))
+            .y0(d => breakdownY + fluidHeight - (d[0] / 100) * fluidHeight)
+            .y1(d => breakdownY + fluidHeight - (d[1] / 100) * fluidHeight)
+            .curve(d3.curveBasis);
+        
+        // Industry group container
+        const industryGroup = sceneGroup.append('g')
+            .attr('class', 'industry-breakdown');
+        
+        // Draw each industry layer with colors that match the CSS
+        const industryNames = ['agriculture', 'crafts', 'services'];
+        const industryColors = ['#8B4513', '#4682B4', '#9370DB'];  // Brown, Blue, Purple
+        const industryFullNames = ['Agriculture', 'Crafts & Trade', 'Services'];
+        
+        stackedData.forEach((layer, i) => {
+            industryGroup.append('path')
+                .datum(layer)
+                .attr('class', `industry-area ${industryNames[i]}`)
+                .attr('fill', industryColors[i])
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 0.5)
+                .style('opacity', 0)
+                .attr('d', area)
+                .transition()
+                .delay(animationDuration > 0 ? animationDuration + i * 100 : 0)
+                .duration(animationDuration > 0 ? 500 : 0)
+                .style('opacity', 0.8);
+        });
+        
+        // Add interactive overlay for mouse tracking
+        const overlay = industryGroup.append('rect')
+            .attr('class', 'industry-overlay')
+            .attr('x', 0)
+            .attr('y', breakdownY)
+            .attr('width', width)
+            .attr('height', fluidHeight)
+            .style('fill', 'none')
+            .style('pointer-events', 'all')
+            .style('cursor', 'crosshair');
+        
+        // Add vertical tracking line (initially hidden)
+        const trackingLine = industryGroup.append('line')
+            .attr('class', 'tracking-line')
+            .attr('y1', breakdownY)
+            .attr('y2', breakdownY + fluidHeight)
+            .attr('stroke', '#333')
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', '3,3')
+            .style('opacity', 0);
+        
+        // Mouse interaction handlers
+        overlay
+            .on('mouseover', () => {
+                trackingLine.style('opacity', 0.7);
+            })
+            .on('mousemove', (event) => {
+                const [mouseX] = d3.pointer(event);
+                const year = Math.round(xScale.invert(mouseX));
+                
+                // Update tracking line position
+                trackingLine.attr('x1', mouseX).attr('x2', mouseX);
+                
+                // Find closest data point (more robust than exact match)
+                const closestData = timePoints.reduce((closest, current) => {
+                    const currentDiff = Math.abs(current.year - year);
+                    const closestDiff = Math.abs(closest.year - year);
+                    return currentDiff < closestDiff ? current : closest;
+                });
+                
+                // Show comprehensive tooltip with closest year data
+                if (onIndustryHover) {
+                    onIndustryHover(event, {
+                        year: closestData.year,
+                        mouseYear: year, // Show what year the mouse is actually over
+                        agriculture: closestData.agriculture,
+                        crafts: closestData.crafts,
+                        services: closestData.services
+                    }, industryColors, industryFullNames);
+                }
+            })
+            .on('mouseout', () => {
+                trackingLine.style('opacity', 0);
+                if (onIndustryOut) {
+                    onIndustryOut();
+                }
+            });
+        
+        // Add legend
+        if (createLegend) {
+            createLegend(breakdownY + fluidHeight + 15);
+        }
     }
 } 

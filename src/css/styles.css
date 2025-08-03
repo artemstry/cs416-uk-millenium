@@ -251,15 +251,18 @@ footer a:hover {
     stroke-width: 1;
 }
 
-.scene-medieval .data-point {
-    fill: #8B4513;
-    stroke: none;
+.data-point {
+    fill: #1976d2;
+    stroke: white;
+    stroke-width: 2;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.scene-medieval .data-point:hover {
-    fill: #A0522D;
-    r: 4;
+.data-point:hover {
+    fill: #1565c0;
+    r: 5;
+    stroke-width: 3;
 }
 
 .scene-medieval .population-line {

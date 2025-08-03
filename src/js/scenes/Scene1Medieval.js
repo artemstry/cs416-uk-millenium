@@ -4,7 +4,7 @@
  */
 
 import { ColorPalette } from '../utils/ColorPalette.js';
-import { SceneUtils } from '../utils/SceneUtils.js';
+import { SceneUtils, LayoutConfig } from '../utils/SceneUtils.js';
 
 export class Scene1Medieval {
     // Static flag to track if scene has been rendered before
@@ -93,8 +93,8 @@ export class Scene1Medieval {
             return;
         }
         
-        // Chart setup - 50% taller Y-axis for better visualization
-        const chartHeight = (this.height - 150) * 1.15;
+        // Chart setup - keep original size, don't make it bigger
+        const chartHeight = this.height - 200;
         
         // Determine actual data range (not theoretical)
         const allDataYears = [...populationData.map(d => d.year), ...gdpData.map(d => d.year)];
@@ -150,7 +150,17 @@ export class Scene1Medieval {
             this.xScale,
             this.yScale,
             isPrimaryPopulation,
-            this.animationDuration
+            this.animationDuration,
+            (event, d, isPrimaryPopulation) => {
+                if (event && d) {
+                    this.showEnhancedTooltip(event, d, isPrimaryPopulation);
+                } else {
+                    this.hideTooltip();
+                }
+            },
+            (event, d, isPrimaryPopulation) => {
+                this.showDetailedStory(event, d, isPrimaryPopulation);
+            }
         );
     }
     
@@ -241,37 +251,46 @@ export class Scene1Medieval {
     }
     
     addEconomicStructure() {
-        // Create a skinny industry breakdown visualization under the main chart
-        const breakdownHeight = 80;
-        const breakdownY = this.height - 20;  // Moved down even further to avoid overlap
+        // Prepare time points data
+        const timePoints = this.prepareEconomicStructureData();
         
-        // Add "Economic Structure" header
-        this.sceneGroup.append('text')
-            .attr('x', this.width / 2)
-            .attr('y', breakdownY - 10)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '14px')
-            .style('font-weight', 'bold')
-            .style('fill', '#333')
-            .text('Economic Structure');
+        if (timePoints.length === 0) return;
         
+        // Use the same X-scale as the main chart to ensure proper alignment
+        const xScale = this.xScale || d3.scaleLinear()
+            .domain([Math.min(...timePoints.map(d => d.year)) - 10, Math.max(...timePoints.map(d => d.year)) + 10])
+            .range([0, this.width]);
+        
+        // Use utility function to create economic structure
+        SceneUtils.createEconomicStructure(
+            this.sceneGroup,
+            this.width,
+            this.height,
+            xScale,
+            timePoints,
+            this.animationDuration,
+            (event, data, colors, names) => {
+                this.showIndustryBreakdownTooltip(event, data, colors, names);
+            },
+            () => {
+                this.hideTooltip();
+            },
+            (startY) => {
+                this.addIndustryLegend(startY);
+            }
+        );
+    }
+    
+    prepareEconomicStructureData() {
         // Get the data range for the breakdown
         const availableYears = this.medievalData.data
             .filter(d => d.population !== null || d.gdpReal !== null)
             .map(d => d.year);
         
-        if (availableYears.length === 0) return;
+        if (availableYears.length === 0) return [];
         
         const actualStartYear = Math.min(...availableYears);
         const actualEndYear = Math.max(...availableYears);
-        
-        // Use the same X-scale as the main chart to ensure proper alignment
-        const xScale = this.xScale || d3.scaleLinear()
-            .domain([actualStartYear - 10, Math.max(actualEndYear + 10, 1500)])
-            .range([0, this.width]);
-        
-        // Create a single fluid industry visualization - taller and more detailed
-        const fluidHeight = 60;
         
         // Create time-based data points - every 5 years for stable tooltips
         const timePoints = [];
@@ -295,99 +314,7 @@ export class Scene1Medieval {
             timePoints.push({ year: finalYear, agriculture, crafts, services });
         }
         
-        // Create stacked area chart using D3's stack generator
-        const stack = d3.stack()
-            .keys(['agriculture', 'crafts', 'services']);
-        
-        const stackedData = stack(timePoints);
-        
-        // Create area generator
-        const area = d3.area()
-            .x(d => xScale(d.data.year))
-            .y0(d => breakdownY + fluidHeight - (d[0] / 100) * fluidHeight)
-            .y1(d => breakdownY + fluidHeight - (d[1] / 100) * fluidHeight)
-            .curve(d3.curveBasis);
-        
-        // Industry group container
-        const industryGroup = this.sceneGroup.append('g')
-            .attr('class', 'industry-breakdown');
-        
-        // Draw each industry layer with colors that match the CSS
-        const industryNames = ['agriculture', 'crafts', 'services'];
-        const industryColors = ['#8B4513', '#4682B4', '#9370DB'];  // Brown, Blue, Purple
-        const industryFullNames = ['Agriculture', 'Crafts & Trade', 'Services'];
-        
-        stackedData.forEach((layer, i) => {
-            industryGroup.append('path')
-                .datum(layer)
-                .attr('class', `industry-area ${industryNames[i]}`)
-                .attr('fill', industryColors[i])
-                .attr('stroke', '#fff')
-                .attr('stroke-width', 0.5)
-                .style('opacity', 0)
-                .attr('d', area)
-                .transition()
-                .delay(this.animationDuration * 2 + i * 200)
-                .duration(1000)
-                .style('opacity', 0.8);
-        });
-        
-        // Add interactive overlay for mouse tracking
-        const overlay = industryGroup.append('rect')
-            .attr('class', 'industry-overlay')
-            .attr('x', 0)
-            .attr('y', breakdownY)
-            .attr('width', this.width)
-            .attr('height', fluidHeight)
-            .style('fill', 'none')
-            .style('pointer-events', 'all')
-            .style('cursor', 'crosshair');
-        
-        // Add vertical tracking line (initially hidden)
-        const trackingLine = industryGroup.append('line')
-            .attr('class', 'tracking-line')
-            .attr('y1', breakdownY)
-            .attr('y2', breakdownY + fluidHeight)
-            .attr('stroke', '#333')
-            .attr('stroke-width', 1)
-            .attr('stroke-dasharray', '3,3')
-            .style('opacity', 0);
-        
-        // Mouse interaction handlers
-        overlay
-            .on('mouseover', () => {
-                trackingLine.style('opacity', 0.7);
-            })
-            .on('mousemove', (event) => {
-                const [mouseX] = d3.pointer(event);
-                const year = Math.round(xScale.invert(mouseX));
-                
-                // Update tracking line position
-                trackingLine.attr('x1', mouseX).attr('x2', mouseX);
-                
-                // Find closest data point (more robust than exact match)
-                const closestData = timePoints.reduce((closest, current) => {
-                    const currentDiff = Math.abs(current.year - year);
-                    const closestDiff = Math.abs(closest.year - year);
-                    return currentDiff < closestDiff ? current : closest;
-                });
-                
-                // Show comprehensive tooltip with closest year data
-                this.showIndustryBreakdownTooltip(event, {
-                    year: closestData.year,
-                    mouseYear: year, // Show what year the mouse is actually over
-                    agriculture: closestData.agriculture,
-                    crafts: closestData.crafts,
-                    services: closestData.services
-                }, industryColors, industryFullNames);
-            })
-            .on('mouseout', () => {
-                trackingLine.style('opacity', 0);
-                this.hideTooltip();
-            });
-        
-        // Add legend
-        this.addIndustryLegend(breakdownY + fluidHeight + 15);
+        return timePoints;
     }
     
     getPeriodForYear(year) {
