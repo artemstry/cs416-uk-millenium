@@ -4,6 +4,7 @@
  */
 
 import { ColorPalette } from '../utils/ColorPalette.js';
+import { SceneUtils } from '../utils/SceneUtils.js';
 
 export class Scene1Medieval {
     // Static flag to track if scene has been rendered before
@@ -130,107 +131,27 @@ export class Scene1Medieval {
     }
     
     addMainAxes(chartHeight, isPrimaryPopulation) {
-        // X-axis
-        const xAxis = d3.axisBottom(this.xScale)
-            .tickFormat(d3.format('d'))
-            .ticks(8);
-        
-        this.sceneGroup.append('g')
-            .attr('class', 'x-axis')
-            .attr('transform', `translate(0, ${chartHeight})`)
-            .call(xAxis);
-        
-        // Y-axis
-        const yAxisLabel = isPrimaryPopulation ? 'Population (thousands)' : 'Real GDP (£M, 2013 prices)';
-        const yAxis = d3.axisLeft(this.yScale)
-            .tickFormat(d => {
-                if (isPrimaryPopulation) {
-                    return d3.format(',')(d);
-                } else {
-                    // For GDP, show in millions with M suffix
-                    return d3.format('.0f')(d) + 'M';
-                }
-            });
-        
-        this.sceneGroup.append('g')
-            .attr('class', 'y-axis')
-            .call(yAxis);
-        
-        // Y-axis label
-        this.sceneGroup.append('text')
-            .attr('transform', 'rotate(-90)')
-            .attr('y', -60)
-            .attr('x', -chartHeight / 2)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '12px')
-            .style('fill', '#666')
-            .text(yAxisLabel);
-        
-        // X-axis label
-        this.sceneGroup.append('text')
-            .attr('x', this.width / 2)
-            .attr('y', chartHeight + 40)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '12px')
-            .style('fill', '#666')
-            .text('Year');
+        SceneUtils.createMainAxes(
+            this.sceneGroup, 
+            this.width, 
+            this.height, 
+            chartHeight, 
+            this.xScale, 
+            this.yScale, 
+            isPrimaryPopulation, 
+            this.animationDuration
+        );
     }
     
     renderMainTrendLine(data, isPrimaryPopulation) {
-        // Create line generator
-        const line = d3.line()
-            .x(d => this.xScale(d.year))
-            .y(d => this.yScale(d.value))
-            .curve(d3.curveMonotoneX);
-        
-        // Main trend line
-        const path = this.sceneGroup.append('path')
-            .datum(data)
-            .attr('class', 'main-trend-line')
-            .attr('fill', 'none')
-            .attr('stroke', isPrimaryPopulation ? '#2E7D32' : '#1565C0')
-            .attr('stroke-width', 3) // Back to previous thickness
-            .attr('d', line);
-        
-        // Animate line drawing (only if animationDuration > 0)
-        if (this.animationDuration > 0) {
-            const totalLength = path.node().getTotalLength();
-            path
-                .attr('stroke-dasharray', totalLength + ' ' + totalLength)
-                .attr('stroke-dashoffset', totalLength)
-                .transition()
-                .duration(this.animationDuration * 2)
-                .ease(d3.easeLinear)
-                .attr('stroke-dashoffset', 0);
-        }
-        
-        // Add data points with enhanced interactivity - smaller, less "bubbly"
-        this.sceneGroup.selectAll('.story-point')
-            .data(data)
-            .enter()
-            .append('circle')
-            .attr('class', 'story-point')
-            .attr('cx', d => this.xScale(d.year))
-            .attr('cy', d => this.yScale(d.value))
-            .attr('r', 2.5) // Back to previous size
-            .attr('fill', isPrimaryPopulation ? '#2E7D32' : '#1565C0')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 1) // Thinner stroke
-            .style('cursor', 'pointer')
-            .style('opacity', this.animationDuration > 0 ? 0 : 1) // Show immediately if no animation
-            .on('mouseover', (event, d) => this.showEnhancedTooltip(event, d, isPrimaryPopulation))
-            .on('mouseout', () => this.hideTooltip())
-            .on('click', (event, d) => this.showDetailedStory(event, d, isPrimaryPopulation))
-            .attr('r', 3); // Final size back to previous
-        
-        // Animate data points only if animation is enabled
-        if (this.animationDuration > 0) {
-            this.sceneGroup.selectAll('.story-point')
-                .transition()
-                .duration(this.animationDuration)
-                .delay((d, i) => i * 50 + this.animationDuration * 2)
-                .style('opacity', 1);
-        }
+        SceneUtils.createMainTrendLine(
+            this.sceneGroup,
+            data,
+            this.xScale,
+            this.yScale,
+            isPrimaryPopulation,
+            this.animationDuration
+        );
     }
     
     addInteractiveStoryPoints(isPrimaryPopulation) {
@@ -289,129 +210,34 @@ export class Scene1Medieval {
             return event.year >= domain[0] && event.year <= domain[1];
         });
         
-        // Add event markers with dynamic positioning and enhanced styling
-        relevantEvents.forEach((historicalEvent, i) => {
-            const x = this.xScale(historicalEvent.year);
-            // Dynamic Y positioning based on event type and index for better visual distribution
-            const baseY = 140;
-            const yOffset = (i % 2 === 0) ? 0 : 60; // Alternate high/low positioning
-            const y = baseY + yOffset;
-            
-            // Add vertical line using vibrant color
-            this.sceneGroup.append('line')
-                .attr('class', 'event-line')
-                .attr('x1', x)
-                .attr('y1', y)
-                .attr('x2', x)
-                .attr('y2', this.height - 95) // Go all the way to X-axis (economic structure area)
-                .attr('stroke', this.getEventColor(i))
-                .attr('stroke-width', 2)
-                .attr('stroke-dasharray', '5,5')
-                .style('opacity', this.animationDuration > 0 ? 0 : 1)
-                .transition()
-                .delay(this.animationDuration * 3 + i * 300)
-                .duration(500)
-                .style('opacity', 0.6);
-            
-            // Add enhanced event circle with glow effect
-            const eventCircle = this.sceneGroup.append('circle')
-                .attr('class', 'event-marker')
-                .attr('cx', x)
-                .attr('cy', y)
-                .attr('r', 0) // Start small for animation
-                .attr('fill', this.getEventColor(i))
-                .attr('stroke', 'white')
-                .attr('stroke-width', 2)
-                .style('cursor', 'pointer')
-                .style('opacity', this.animationDuration > 0 ? 0 : 1)
-                .style('filter', 'drop-shadow(0 0 4px ' + this.getEventColor(i) + ')') // Add glow effect
-                .on('mouseover', (event) => {
-                    this.showEventTooltip(event, historicalEvent, this.getEventColor(i));
-                    eventCircle.transition().duration(200).attr('r', 8); // Expand on hover
-                })
-                .on('mouseout', () => {
+        // Use utility function to create event markers
+        SceneUtils.createEventMarkers(
+            this.sceneGroup,
+            relevantEvents,
+            this.xScale,
+            this.height,
+            this.animationDuration,
+            (event, historicalEvent, markerColor) => {
+                if (event && historicalEvent && markerColor) {
+                    this.showEventTooltip(event, historicalEvent, markerColor);
+                } else {
                     this.hideTooltip();
-                    eventCircle.transition().duration(200).attr('r', 6); // Return to normal size
-                })
-                .on('click', (event) => this.showEventStory(historicalEvent, this.getEventColor(i)));
-            
-            // Animate circle appearance
-            eventCircle.transition()
-                .delay(this.animationDuration * 3 + i * 300)
-                .duration(500)
-                .attr('r', 6)
-                .style('opacity', 1);
-            
-            // Add enhanced event label with background
-            const labelGroup = this.sceneGroup.append('g')
-                .attr('class', 'event-label-group')
-                .style('opacity', this.animationDuration > 0 ? 0 : 1);
-            
-            // Add background rectangle for better readability
-            const labelText = `${historicalEvent.year} - ${historicalEvent.event}`;
-            const labelWidth = labelText.length * 6; // Approximate width
-            const labelHeight = 16;
-            
-            labelGroup.append('rect')
-                .attr('x', x + 8)
-                .attr('y', y - 22)
-                .attr('width', labelWidth + 8)
-                .attr('height', labelHeight)
-                .attr('fill', 'rgba(255, 255, 255, 0.9)')
-                .attr('stroke', this.getEventColor(i))
-                .attr('stroke-width', 1)
-                .attr('rx', 3);
-            
-            // Add text label
-            labelGroup.append('text')
-                .attr('class', 'event-label')
-                .attr('x', x + 12)
-                .attr('y', y - 10)
-                .attr('text-anchor', 'start')
-                .style('font-size', '10px')
-                .style('font-weight', 'bold')
-                .style('fill', this.getEventColor(i))
-                .text(labelText);
-            
-            // Animate label appearance
-            labelGroup.transition()
-                .delay(this.animationDuration * 3 + i * 300 + 200)
-                .duration(500)
-                .style('opacity', 1);
-        });
+                }
+            },
+            (historicalEvent, markerColor) => {
+                this.showEventStory(historicalEvent, markerColor);
+            }
+        );
     }
     
     // Scene-specific data methods
     addSceneTitle() {
-        // Main title - positioned much higher to avoid any overlap
-        this.sceneGroup.append('text')
-            .attr('class', 'scene-title')
-            .attr('x', this.width / 2)
-            .attr('y', -70) // Move header much further down to be fully visible
-            .attr('text-anchor', 'middle')
-            .style('font-size', '22px')
-            .style('font-weight', 'bold')
-            .style('fill', '#1f4e79')
-            .style('opacity', 0)
-            .text('Medieval Times (1209-1500)')
-            .transition()
-            .duration(500)
-            .style('opacity', 1);
-        
-        // Subtitle - also positioned much higher
-        this.sceneGroup.append('text')
-            .attr('class', 'scene-subtitle')
-            .attr('x', this.width / 2)
-            .attr('y', -40) // Move subtitle much further down to be fully visible
-            .attr('text-anchor', 'middle')
-            .style('font-size', '15px')
-            .style('fill', '#666')
-            .style('opacity', 0)
-            .text('Centuries of Economic Stagnation Before Transformation')
-            .transition()
-            .delay(200)
-            .duration(500)
-            .style('opacity', 1);
+        SceneUtils.createSceneTitle(
+            this.sceneGroup,
+            this.width,
+            'Medieval Times (1209-1500)',
+            'Centuries of Economic Stagnation Before Transformation'
+        );
     }
     
     addEconomicStructure() {
@@ -820,84 +646,15 @@ export class Scene1Medieval {
     }
     
     hideTooltip() {
-        d3.selectAll('.tooltip')
-            .transition()
-            .duration(200)
-            .style('opacity', 0)
-            .remove();
+        SceneUtils.hideTooltip();
     }
     
     showEventTooltip(event, historicalEvent, markerColor) {
-        const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
-        tooltip.enter().append('div').attr('class', 'tooltip')
-            .merge(tooltip)
-            .style('position', 'absolute')
-            .style('background', 'rgba(0, 0, 0, 0.8)')
-            .style('color', 'white')
-            .style('padding', '8px')
-            .style('border-radius', '4px')
-            .style('font-size', '12px')
-            .style('pointer-events', 'none')
-            .style('z-index', 1000)
-            .style('box-shadow', '0 4px 12px rgba(0,0,0,0.3)')
-            .style('border', `2px solid ${markerColor}`)
-            .style('max-width', '250px')
-            .style('line-height', '1.4');
-        
-        let tooltipContent = `<div style="font-weight: bold; margin-bottom: 6px; color: ${markerColor};">${historicalEvent.year} - ${historicalEvent.event}</div>`;
-        tooltipContent += `<div style="border-bottom: 1px solid ${markerColor}; margin-bottom: 8px; padding-bottom: 4px;"></div>`;
-        tooltipContent += `<div style="margin-bottom: 8px; font-size: 12px;">${historicalEvent.story}</div>`;
-        tooltipContent += `<div style="font-size: 11px; font-style: italic; opacity: 0.9;">Impact: ${historicalEvent.economicEffect}</div>`;
-        tooltipContent += `<div style="text-align: center; margin-top: 6px; font-size: 10px; opacity: 0.8;">Click event marker for full story</div>`;
-        
-        tooltip.html(tooltipContent)
-            .style('left', Math.min(event.pageX + 15, window.innerWidth - 270) + 'px')
-            .style('top', Math.max(event.pageY - 10, 10) + 'px')
-            .style('opacity', 0)
-            .transition()
-            .duration(200)
-            .style('opacity', 1);
+        SceneUtils.createTooltip(event, historicalEvent, markerColor, 'event');
     }
     
     showEventStory(historicalEvent, markerColor) {
-        // Scene-specific event story implementation
-        console.log('Event story clicked:', historicalEvent);
-        
-        // Create a detailed story modal or enhanced tooltip
-        const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
-        tooltip.enter().append('div').attr('class', 'tooltip')
-            .merge(tooltip)
-            .style('position', 'absolute')
-            .style('background', 'rgba(0, 0, 0, 0.95)')
-            .style('color', 'white')
-            .style('padding', '15px')
-            .style('border-radius', '8px')
-            .style('font-size', '13px')
-            .style('pointer-events', 'none')
-            .style('z-index', 1000)
-            .style('box-shadow', '0 8px 25px rgba(0,0,0,0.5)')
-            .style('border', `2px solid ${markerColor}`)
-            .style('max-width', '400px')
-            .style('line-height', '1.6');
-        
-        let storyContent = `<div style="border-bottom: 2px solid ${markerColor}; margin-bottom: 12px; padding-bottom: 8px;">`;
-        storyContent += `<strong style="color: ${markerColor}; font-size: 16px;">${historicalEvent.year} - ${historicalEvent.event}</strong></div>`;
-        storyContent += `<div style="margin-bottom: 12px; font-size: 14px;">${historicalEvent.story}</div>`;
-        storyContent += `<div style="margin-bottom: 12px; font-size: 14px;">${historicalEvent.story2}</div>`;
-        storyContent += `<div style="background: rgba(255,193,7,0.2); padding: 8px; border-radius: 4px; margin-bottom: 12px;">`;
-        storyContent += `<strong style="color: #FFC107;">Economic Impact:</strong><br/>`;
-        storyContent += `<small>${historicalEvent.economicEffect}</small></div>`;
-        storyContent += `<div style="background: rgba(76,175,80,0.2); padding: 8px; border-radius: 4px; margin-bottom: 12px;">`;
-        storyContent += `<strong style="color: #4CAF50;">Long-term Impact:</strong><br/>`;
-        storyContent += `<small>${historicalEvent.longTermImpact}</small></div>`;
-        
-        tooltip.html(storyContent)
-            .style('left', Math.min(window.innerWidth / 2 - 200, window.innerWidth - 420) + 'px')
-            .style('top', Math.max(window.innerHeight / 2 - 150, 20) + 'px')
-            .style('opacity', 0)
-            .transition()
-            .duration(300)
-            .style('opacity', 1);
+        SceneUtils.createTooltip(null, historicalEvent, markerColor, 'story');
     }
     
     renderStagnationStory() {
