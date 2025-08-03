@@ -225,7 +225,7 @@ export class SceneUtils {
                 .style('filter', `drop-shadow(0 0 4px ${markerColor})`)
                 .on('mouseover', (e) => {
                     // Show detailed story tooltip immediately on mouseover
-                    onEventClick(event, markerColor);
+                    onEventClick(e, event, markerColor);
                     eventCircle.transition().duration(200).attr('r', 8);
                 })
                 .on('mouseout', () => {
@@ -344,7 +344,7 @@ export class SceneUtils {
         if (type === 'event') {
             return SceneUtils.createEventTooltip(tooltip, event, data, color);
         } else if (type === 'story') {
-            return SceneUtils.createEventStoryTooltip(tooltip, data, color);
+            return SceneUtils.createEventStoryTooltip(tooltip, data, color, event);
         }
     }
     
@@ -392,7 +392,7 @@ export class SceneUtils {
      * @param {Object} data - Event data
      * @param {string} color - Tooltip color
      */
-    static createEventStoryTooltip(tooltip, data, color) {
+    static createEventStoryTooltip(tooltip, data, color, event = null) {
         // Remove any existing tooltips first
         d3.selectAll('.tooltip').remove();
         
@@ -423,9 +423,21 @@ export class SceneUtils {
         storyContent += `<strong style="color: #4CAF50;">Long-term Impact:</strong><br/>`;
         storyContent += `<small>${data.longTermImpact}</small></div>`;
         
+        // Position tooltip near mouse cursor if event is provided, otherwise center it
+        let left, top;
+        if (event && event.pageX && event.pageY) {
+            // Position near mouse cursor, ensuring it stays within viewport
+            left = Math.min(event.pageX + 15, window.innerWidth - 420);
+            top = Math.max(event.pageY - 10, 20);
+        } else {
+            // Fallback to center positioning
+            left = Math.min(window.innerWidth / 2 - 200, window.innerWidth - 420);
+            top = Math.max(window.innerHeight / 2 - 150, 20);
+        }
+        
         newTooltip.html(storyContent)
-            .style('left', Math.min(window.innerWidth / 2 - 200, window.innerWidth - 420) + 'px')
-            .style('top', Math.max(window.innerHeight / 2 - 150, 20) + 'px')
+            .style('left', left + 'px')
+            .style('top', top + 'px')
             .style('opacity', 0)
             .transition()
             .duration(200)

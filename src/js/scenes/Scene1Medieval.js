@@ -207,8 +207,8 @@ export class Scene1Medieval {
                     this.hideTooltip();
                 }
             },
-            (historicalEvent, markerColor) => {
-                this.showEventStory(historicalEvent, markerColor);
+            (event, historicalEvent, markerColor) => {
+                this.showEventStory(event, historicalEvent, markerColor);
             }
         );
     }
@@ -413,8 +413,8 @@ export class Scene1Medieval {
         SceneUtils.createTooltip(event, historicalEvent, markerColor, 'event');
     }
     
-    showEventStory(historicalEvent, markerColor) {
-        SceneUtils.createTooltip(null, historicalEvent, markerColor, 'story');
+    showEventStory(event, historicalEvent, markerColor) {
+        SceneUtils.createTooltip(event, historicalEvent, markerColor, 'story');
     }
     
     renderStagnationStory() {
