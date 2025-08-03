@@ -60,7 +60,7 @@ export class SceneUtils {
         const yAxis = d3.axisLeft(yScale)
             .tickFormat(d => isPrimaryPopulation ? 
                 d3.format(',')(d) + 'k' : 
-                '£' + d3.format('.0f')(d) + 'M'
+                '£' + d3.format('.1f')(d / 1000) + 'B'
             )
             .tickPadding(8);
         
@@ -99,7 +99,7 @@ export class SceneUtils {
             .style('font-weight', 'bold')
             .style('fill', '#333')
             .style('opacity', animationDuration > 0 ? 0 : 1)
-            .text(isPrimaryPopulation ? 'Population (thousands)' : 'GDP (millions, 2013 prices)')
+            .text(isPrimaryPopulation ? 'Population (thousands)' : 'GDP (billions, 2013 prices)')
             .transition()
             .delay(animationDuration + 600)
             .duration(500)
@@ -800,7 +800,7 @@ export class SceneUtils {
         
         // Always show GDP if available
         if (gdpForYear) {
-            tooltipContent += `<div style="margin-bottom: 8px;"><strong>GDP:</strong> £${gdpForYear.toFixed(1)}M (2013 prices)</div>`;
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>GDP:</strong> £${(gdpForYear / 1000).toFixed(1)}B (2013 prices)</div>`;
             
             // Calculate proper GDP per capita
             const population = populationForYear || estimatePopulation(d.year);

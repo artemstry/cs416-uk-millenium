@@ -28,12 +28,12 @@ class NarrativeVisualization {
         
         // Updated 6-scene structure based on our narrative proposal
         this.scenes = [
-            { id: 1, title: 'Medieval Times', period: '1209-1500', class: Scene1Medieval },
-            { id: 2, title: 'Great Awakening', period: '1500-1750', class: Scene2GreatAwakening },
-            { id: 3, title: 'Industrial Explosion', period: '1750-1900', class: Scene3Industrial },
-            { id: 4, title: 'Crisis & Transformation', period: '1900-1950', class: Scene4Crisis },
-            { id: 5, title: 'Modern Service Economy', period: '1950-2016', class: Scene5Modern },
-            { id: 6, title: 'Interactive Exploration', period: 'All Periods', class: Scene6Interactive }
+            { id: 1, title: 'Medieval Times', period: '1209-1500', class: Scene1Medieval, icon: 'fa-castle' },
+            { id: 2, title: 'Great Awakening', period: '1500-1750', class: Scene2GreatAwakening, icon: 'fa-ship' },
+            { id: 3, title: 'Industrial Explosion', period: '1750-1900', class: Scene3Industrial, icon: 'fa-industry' },
+            { id: 4, title: 'Crisis & Transformation', period: '1900-1950', class: Scene4Crisis, icon: 'fa-exclamation-triangle' },
+            { id: 5, title: 'Modern Service Economy', period: '1950-2016', class: Scene5Modern, icon: 'fa-chart-line' },
+            { id: 6, title: 'Interactive Exploration', period: 'All Periods', class: Scene6Interactive, icon: 'fa-compass' }
         ];
         
         this.sceneInstances = {};
@@ -92,15 +92,15 @@ class NarrativeVisualization {
             .append('button')
             .attr('class', (d, i) => `nav-button ${i === 0 ? 'active' : ''}`)
             .attr('data-scene', d => d.id)
-            .text(d => `${d.title} (${d.period})`)
             .on('click', (event, d) => {
                 this.navigateToScene(d.id);
-            });
+            })
+            .html(d => `<i class="fas ${d.icon}"></i><span>${d.title} (${d.period})</span>`);
     }
     
     addNavigationArrows() {
         const arrowSize = 60;
-        const arrowY = this.parameters.height / 2;
+        const arrowY = 50; // Moved to top of chart
         const leftX = 20; // Fixed: moved back to visible position
         const rightX = this.parameters.width - 30;
         

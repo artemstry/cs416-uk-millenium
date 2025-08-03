@@ -80,28 +80,46 @@ footer a:hover {
 /* Navigation */
 #scene-navigation {
     display: flex;
-    gap: 1rem;
     justify-content: center;
     margin-top: 1rem;
     flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .nav-button {
     background: rgba(255,255,255,0.2);
     color: white;
     border: 1px solid rgba(255,255,255,0.3);
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 140px;
+    justify-content: center;
 }
 
-.nav-button:hover,
-.nav-button.active {
+.nav-button:hover {
     background: rgba(255,255,255,0.3);
     border-color: rgba(255,255,255,0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.nav-button.active {
+    background: rgba(255,255,255,0.4);
+    border-color: rgba(255,255,255,0.6);
+    font-weight: bold;
     transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.nav-button i {
+    font-size: 1.1rem;
+    opacity: 0.9;
 }
 
 /* Annotations */
