@@ -326,14 +326,14 @@ export class Scene1Medieval {
                 .style('opacity', this.animationDuration > 0 ? 0 : 1)
                 .style('filter', 'drop-shadow(0 0 4px ' + this.getEventColor(i) + ')') // Add glow effect
                 .on('mouseover', (event) => {
-                    this.showEventTooltip(event, historicalEvent);
+                    this.showEventTooltip(event, historicalEvent, this.getEventColor(i));
                     eventCircle.transition().duration(200).attr('r', 8); // Expand on hover
                 })
                 .on('mouseout', () => {
                     this.hideTooltip();
                     eventCircle.transition().duration(200).attr('r', 6); // Return to normal size
                 })
-                .on('click', (event) => this.showEventStory(historicalEvent));
+                .on('click', (event) => this.showEventStory(historicalEvent, this.getEventColor(i)));
             
             // Animate circle appearance
             eventCircle.transition()
@@ -827,7 +827,7 @@ export class Scene1Medieval {
             .remove();
     }
     
-    showEventTooltip(event, historicalEvent) {
+    showEventTooltip(event, historicalEvent, markerColor) {
         const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
         tooltip.enter().append('div').attr('class', 'tooltip')
             .merge(tooltip)
@@ -840,11 +840,12 @@ export class Scene1Medieval {
             .style('pointer-events', 'none')
             .style('z-index', 1000)
             .style('box-shadow', '0 4px 12px rgba(0,0,0,0.3)')
-            .style('border', '2px solid white')
+            .style('border', `2px solid ${markerColor}`)
             .style('max-width', '250px')
             .style('line-height', '1.4');
         
-        let tooltipContent = `<div style="font-weight: bold; margin-bottom: 6px;">${historicalEvent.year} - ${historicalEvent.event}</div>`;
+        let tooltipContent = `<div style="font-weight: bold; margin-bottom: 6px; color: ${markerColor};">${historicalEvent.year} - ${historicalEvent.event}</div>`;
+        tooltipContent += `<div style="border-bottom: 1px solid ${markerColor}; margin-bottom: 8px; padding-bottom: 4px;"></div>`;
         tooltipContent += `<div style="margin-bottom: 8px; font-size: 12px;">${historicalEvent.story}</div>`;
         tooltipContent += `<div style="font-size: 11px; font-style: italic; opacity: 0.9;">Impact: ${historicalEvent.economicEffect}</div>`;
         tooltipContent += `<div style="text-align: center; margin-top: 6px; font-size: 10px; opacity: 0.8;">Click event marker for full story</div>`;
@@ -858,7 +859,7 @@ export class Scene1Medieval {
             .style('opacity', 1);
     }
     
-    showEventStory(historicalEvent) {
+    showEventStory(historicalEvent, markerColor) {
         // Scene-specific event story implementation
         console.log('Event story clicked:', historicalEvent);
         
@@ -875,12 +876,12 @@ export class Scene1Medieval {
             .style('pointer-events', 'none')
             .style('z-index', 1000)
             .style('box-shadow', '0 8px 25px rgba(0,0,0,0.5)')
-            .style('border', '2px solid #d4a574')
+            .style('border', `2px solid ${markerColor}`)
             .style('max-width', '400px')
             .style('line-height', '1.6');
         
-        let storyContent = `<div style="border-bottom: 2px solid #d4a574; margin-bottom: 12px; padding-bottom: 8px;">`;
-        storyContent += `<strong style="color: #d4a574; font-size: 16px;">${historicalEvent.year} - ${historicalEvent.event}</strong></div>`;
+        let storyContent = `<div style="border-bottom: 2px solid ${markerColor}; margin-bottom: 12px; padding-bottom: 8px;">`;
+        storyContent += `<strong style="color: ${markerColor}; font-size: 16px;">${historicalEvent.year} - ${historicalEvent.event}</strong></div>`;
         storyContent += `<div style="margin-bottom: 12px; font-size: 14px;">${historicalEvent.story}</div>`;
         storyContent += `<div style="margin-bottom: 12px; font-size: 14px;">${historicalEvent.story2}</div>`;
         storyContent += `<div style="background: rgba(255,193,7,0.2); padding: 8px; border-radius: 4px; margin-bottom: 12px;">`;
