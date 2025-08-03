@@ -28,10 +28,10 @@ class NarrativeVisualization {
         
         // Updated 6-scene structure based on our narrative proposal
         this.scenes = [
-            { id: 1, title: 'Medieval Times', period: '1209-1500', class: Scene1Medieval, icon: 'fa-castle' },
+            { id: 1, title: 'Medieval Times', period: '1209-1500', class: Scene1Medieval, icon: 'fa-landmark' },
             { id: 2, title: 'Great Awakening', period: '1500-1750', class: Scene2GreatAwakening, icon: 'fa-ship' },
             { id: 3, title: 'Industrial Explosion', period: '1750-1900', class: Scene3Industrial, icon: 'fa-industry' },
-            { id: 4, title: 'Crisis & Transformation', period: '1900-1950', class: Scene4Crisis, icon: 'fa-exclamation-triangle' },
+            { id: 4, title: 'Crisis & Transformation', period: '1900-1950', class: Scene4Crisis, icon: 'fa-shield-alt' },
             { id: 5, title: 'Modern Service Economy', period: '1950-2016', class: Scene5Modern, icon: 'fa-chart-line' },
             { id: 6, title: 'Interactive Exploration', period: 'All Periods', class: Scene6Interactive, icon: 'fa-compass' }
         ];
@@ -315,8 +315,9 @@ class NarrativeVisualization {
         annotationDivs.append('h3')
             .text(d => d.title);
         
-        annotationDivs.append('p')
-            .text(d => d.text);
+        annotationDivs.append('div')
+            .attr('class', 'annotation-content')
+            .html(d => d.content || d.text);
     }
     
     getAnnotationsForScene(sceneId) {
@@ -327,85 +328,85 @@ class NarrativeVisualization {
             1: [
                 {
                     title: 'Medieval Times',
-                    text: 'For centuries, England\'s economy remained locked in medieval patterns with sparse data, agricultural dominance, and extreme volatility from famines and plagues.'
+                    content: 'For centuries, England\'s economy remained locked in medieval patterns with sparse data, agricultural dominance, and extreme volatility from famines and plagues. The <a href="https://en.wikipedia.org/wiki/Medieval_demography" target="_blank">medieval demographic cycle</a> saw repeated population crashes and recoveries.'
                 },
                 {
                     title: 'Population Stagnation',
-                    text: `Population grew very slowly from ~3.6M to ~4.3M over 300 years. The Black Death (1348) devastated the population by 30-40%.`
+                    content: `Population grew very slowly from ~3.6M to ~4.3M over 300 years. The <a href="https://en.wikipedia.org/wiki/Black_Death" target="_blank">Black Death (1348)</a> devastated the population by 30-40%, creating labor shortages that eventually led to the end of serfdom.`
                 },
                 {
-                                title: 'Economic Structure',
-            text: `Medieval economy dominated by agriculture (70-85%), with emerging crafts & trade sectors. Service economy minimal.`
+                    title: 'Economic Structure',
+                    content: `Medieval economy dominated by <a href="https://en.wikipedia.org/wiki/Medieval_agriculture" target="_blank">agriculture (70-85%)</a>, with emerging crafts & trade sectors. Service economy minimal, limited to basic commerce and religious institutions.`
                 }
             ],
             2: [
                 {
                     title: 'The Great Awakening',
-                    text: 'The Renaissance brought economic dynamism - population surged, trade expanded, and financial innovations emerged.'
+                    content: 'The <a href="https://en.wikipedia.org/wiki/Renaissance" target="_blank">Renaissance</a> brought economic dynamism - population surged, trade expanded, and financial innovations emerged. The <a href="https://en.wikipedia.org/wiki/Age_of_Discovery" target="_blank">Age of Discovery</a> opened global trade routes.'
                 },
                 {
                     title: 'Financial Innovation',
-                    text: 'Bank of England founded (1694), stock markets emerge, interest rates fall from 10%+ to 3-5%.'
+                    content: '<a href="https://en.wikipedia.org/wiki/Bank_of_England" target="_blank">Bank of England</a> founded (1694), <a href="https://en.wikipedia.org/wiki/Stock_market" target="_blank">stock markets</a> emerge, interest rates fall from 10%+ to 3-5%. The <a href="https://en.wikipedia.org/wiki/Financial_Revolution" target="_blank">Financial Revolution</a> created modern banking.'
                 },
                 {
                     title: 'GDP Acceleration',
-                    text: 'England GDP grows from £2.6M to £10.7M - 4x growth in 250 years, setting stage for industrial revolution.'
+                    content: 'England GDP grows from £2.6M to £10.7M - 4x growth in 250 years, setting stage for <a href="https://en.wikipedia.org/wiki/Industrial_Revolution" target="_blank">industrial revolution</a>. Population doubles from 4M to 8M.'
                 }
             ],
             3: [
                 {
                     title: 'Industrial Explosion',
-                    text: 'The Industrial Revolution created sustained economic growth for the first time in human history.'
+                    content: 'The <a href="https://en.wikipedia.org/wiki/Industrial_Revolution" target="_blank">Industrial Revolution</a> created sustained economic growth for the first time in human history. <a href="https://en.wikipedia.org/wiki/Steam_engine" target="_blank">Steam power</a> and <a href="https://en.wikipedia.org/wiki/Factory_system" target="_blank">factory system</a> revolutionized production.'
                 },
                 {
                     title: 'Exponential Growth',
-                    text: 'Real GDP explodes 20x from £10M to £200M. Population quadruples with massive urbanization.'
+                    content: 'Real GDP explodes 20x from £10M to £200M. Population quadruples with massive <a href="https://en.wikipedia.org/wiki/Urbanization" target="_blank">urbanization</a>. <a href="https://en.wikipedia.org/wiki/Railway_manias" target="_blank">Railway manias</a> and infrastructure boom.'
                 },
                 {
                     title: 'Modern Economy Born',
-                    text: 'Shift from 80% agricultural to 20% agricultural employment. Real wages rise for first time in centuries.'
+                    content: 'Shift from 80% agricultural to 20% agricultural employment. <a href="https://en.wikipedia.org/wiki/Real_wage" target="_blank">Real wages</a> rise for first time in centuries. <a href="https://en.wikipedia.org/wiki/Middle_class" target="_blank">Middle class</a> emerges.'
                 }
             ],
             4: [
                 {
                     title: 'Crisis & Transformation',
-                    text: 'Two world wars and the Great Depression shattered the old economic order, birthing the modern state.'
+                    content: 'Two <a href="https://en.wikipedia.org/wiki/World_War_I" target="_blank">world wars</a> and the <a href="https://en.wikipedia.org/wiki/Great_Depression" target="_blank">Great Depression</a> shattered the old economic order, birthing the modern state. <a href="https://en.wikipedia.org/wiki/Keynesian_economics" target="_blank">Keynesian economics</a> emerges.'
                 },
                 {
                     title: 'Big Government',
-                    text: 'Government spending explodes from 10% to 40%+ of GDP during wars. Unemployment peaks at 15%+ in 1930s.'
+                    content: 'Government spending explodes from 10% to 40%+ of GDP during wars. <a href="https://en.wikipedia.org/wiki/Unemployment" target="_blank">Unemployment</a> peaks at 15%+ in 1930s. <a href="https://en.wikipedia.org/wiki/Welfare_state" target="_blank">Welfare state</a> established.'
                 },
                 {
                     title: 'New Economic Order',
-                    text: 'Gold standard abandoned, modern economic management emerges, welfare state established.'
+                    content: '<a href="https://en.wikipedia.org/wiki/Gold_standard" target="_blank">Gold standard</a> abandoned, modern economic management emerges. <a href="https://en.wikipedia.org/wiki/Bretton_Woods_system" target="_blank">Bretton Woods</a> creates new monetary order.'
                 }
             ],
             5: [
                 {
                     title: 'Modern Service Economy',
-                    text: 'Britain transforms from industrial powerhouse to service economy, bringing new prosperity and financial risks.'
+                    content: 'Britain transforms from industrial powerhouse to <a href="https://en.wikipedia.org/wiki/Service_economy" target="_blank">service economy</a>, bringing new prosperity and financial risks. <a href="https://en.wikipedia.org/wiki/Thatcherism" target="_blank">Thatcher reforms</a> accelerate transition.'
                 },
                 {
                     title: 'Service Dominance',
-                    text: 'Services grow from 40% to 80% of economy. Financial sector profits surge as manufacturing declines.'
+                    content: 'Services grow from 40% to 80% of economy. <a href="https://en.wikipedia.org/wiki/Financial_services" target="_blank">Financial sector</a> profits surge as manufacturing declines. <a href="https://en.wikipedia.org/wiki/Big_Bang_(financial_markets)" target="_blank">Big Bang</a> deregulation (1986).'
                 },
                 {
                     title: 'Asset Inflation',
-                    text: 'House prices explode 100x since 1950, while wages rise only 10x. Consumer debt mountains accumulate.'
+                    content: '<a href="https://en.wikipedia.org/wiki/House_price_index" target="_blank">House prices</a> explode 100x since 1950, while wages rise only 10x. <a href="https://en.wikipedia.org/wiki/Consumer_debt" target="_blank">Consumer debt</a> mountains accumulate. <a href="https://en.wikipedia.org/wiki/Financial_crisis_of_2007%E2%80%9308" target="_blank">2008 crisis</a> exposes risks.'
                 }
             ],
             6: [
                 {
                     title: 'Interactive Exploration',
-                    text: 'Explore 1000+ years of UK economic data to discover patterns, correlations, and long-term trends.'
+                    content: 'Explore 1000+ years of UK economic data to discover patterns, correlations, and long-term trends. <a href="https://en.wikipedia.org/wiki/Data_visualization" target="_blank">Data visualization</a> reveals hidden economic cycles.'
                 },
                 {
                     title: 'Historical Context',
-                    text: 'Compare different time periods, analyze crisis impacts, and understand how past events shaped modern Britain.'
+                    content: 'Compare different time periods, analyze crisis impacts, and understand how past events shaped modern Britain. <a href="https://en.wikipedia.org/wiki/Economic_history" target="_blank">Economic history</a> provides crucial lessons.'
                 },
                 {
                     title: 'Data Insights',
-                    text: `${this.data?.summary?.dramaticChanges?.[0]?.description || 'Discover dramatic transformations in UK economic history.'}`
+                    content: `${this.data?.summary?.dramaticChanges?.[0]?.description || 'Discover dramatic transformations in UK economic history.'} <a href="https://en.wikipedia.org/wiki/Macroeconomic_data" target="_blank">Macroeconomic data</a> from <a href="https://en.wikipedia.org/wiki/Bank_of_England" target="_blank">Bank of England</a>.`
                 }
             ]
         };
