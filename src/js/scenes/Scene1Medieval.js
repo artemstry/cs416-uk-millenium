@@ -275,23 +275,23 @@ export class Scene1Medieval {
         const periodData = {
             '1200s': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 85, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 10, color: '#D2691E' },
-                { key: 'services', name: 'Services', percentage: 5, color: '#CD853F' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 10, color: '#4682B4' },
+                { key: 'services', name: 'Services', percentage: 5, color: '#9370DB' }
             ],
             '1300s': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 80, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 15, color: '#D2691E' },
-                { key: 'services', name: 'Services', percentage: 5, color: '#CD853F' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 15, color: '#4682B4' },
+                { key: 'services', name: 'Services', percentage: 5, color: '#9370DB' }
             ],
             '1400s': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 75, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 18, color: '#D2691E' },
-                { key: 'services', name: 'Services', percentage: 7, color: '#CD853F' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 18, color: '#4682B4' },
+                { key: 'services', name: 'Services', percentage: 7, color: '#9370DB' }
             ],
             '1500s': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 70, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 20, color: '#D2691E' },
-                { key: 'services', name: 'Services', percentage: 10, color: '#CD853F' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 20, color: '#4682B4' },
+                { key: 'services', name: 'Services', percentage: 10, color: '#9370DB' }
             ]
         };
         

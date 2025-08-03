@@ -261,14 +261,14 @@ export class SceneUtils {
             .style('opacity', animationDuration > 0 ? 0 : 1);
         
         const labelText = `${event.year} - ${event.event}`;
-        const labelWidth = labelText.length * 6;
+        const labelWidth = labelText.length * 5.5;
         const labelHeight = 16;
         
         // Background rectangle
         labelGroup.append('rect')
             .attr('x', x + 8)
             .attr('y', y - 22)
-            .attr('width', labelWidth + 8)
+            .attr('width', labelWidth)
             .attr('height', labelHeight)
             .attr('fill', 'rgba(255, 255, 255, 0.9)')
             .attr('stroke', color)

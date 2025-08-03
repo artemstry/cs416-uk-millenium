@@ -275,23 +275,23 @@ export class Scene2GreatAwakening {
         const periodData = {
             'Early Reformation': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 70, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 20, color: '#D2691E' },
-                { key: 'services', name: 'Services', percentage: 10, color: '#CD853F' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 20, color: '#4682B4' },
+                { key: 'services', name: 'Services', percentage: 10, color: '#9370DB' }
             ],
             'Early Colonial Commerce': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 60, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 35, color: '#D2691E' },
-                { key: 'services', name: 'Services', percentage: 5, color: '#CD853F' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 35, color: '#4682B4' },
+                { key: 'services', name: 'Services', percentage: 5, color: '#9370DB' }
             ],
             'Financial Revolution Era': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 55, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 40, color: '#D2691E' },
-                { key: 'services', name: 'Services', percentage: 5, color: '#CD853F' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 40, color: '#4682B4' },
+                { key: 'services', name: 'Services', percentage: 5, color: '#9370DB' }
             ],
             'Pre-Industrial Transformation': [
                 { key: 'agriculture', name: 'Agriculture', percentage: 50, color: '#8B4513' },
-                { key: 'crafts', name: 'Crafts & Trade', percentage: 45, color: '#D2691E' },
-                { key: 'services', name: 'Services', percentage: 5, color: '#CD853F' }
+                { key: 'crafts', name: 'Crafts & Trade', percentage: 45, color: '#4682B4' },
+                { key: 'services', name: 'Services', percentage: 5, color: '#9370DB' }
             ]
         };
         
