@@ -211,6 +211,7 @@ export class SceneUtils {
                 .style('opacity', 0.6);
             
             // Add event circle
+            let tooltipTimeout;
             const eventCircle = sceneGroup.append('circle')
                 .attr('class', 'event-marker')
                 .attr('cx', x)
@@ -223,14 +224,15 @@ export class SceneUtils {
                 .style('opacity', animationDuration > 0 ? 0 : 1)
                 .style('filter', `drop-shadow(0 0 4px ${markerColor})`)
                 .on('mouseover', (e) => {
-                    onEventHover(e, event, markerColor);
+                    // Show detailed story tooltip immediately on mouseover
+                    onEventClick(event, markerColor);
                     eventCircle.transition().duration(200).attr('r', 8);
                 })
                 .on('mouseout', () => {
+                    // Hide tooltip immediately on mouseout
                     onEventHover(null, null, null);
                     eventCircle.transition().duration(200).attr('r', 6);
-                })
-                .on('click', (e) => onEventClick(event, markerColor));
+                });
             
             eventCircle.transition()
                 .delay(animationDuration > 0 ? animationDuration * 1.5 + i * 150 : 0)
@@ -391,8 +393,12 @@ export class SceneUtils {
      * @param {string} color - Tooltip color
      */
     static createEventStoryTooltip(tooltip, data, color) {
-        tooltip.enter().append('div').attr('class', 'tooltip')
-            .merge(tooltip)
+        // Remove any existing tooltips first
+        d3.selectAll('.tooltip').remove();
+        
+        // Create new tooltip
+        const newTooltip = d3.select('body').append('div')
+            .attr('class', 'tooltip')
             .style('position', 'absolute')
             .style('background', 'rgba(0, 0, 0, 0.95)')
             .style('color', 'white')
@@ -417,12 +423,12 @@ export class SceneUtils {
         storyContent += `<strong style="color: #4CAF50;">Long-term Impact:</strong><br/>`;
         storyContent += `<small>${data.longTermImpact}</small></div>`;
         
-        tooltip.html(storyContent)
+        newTooltip.html(storyContent)
             .style('left', Math.min(window.innerWidth / 2 - 200, window.innerWidth - 420) + 'px')
             .style('top', Math.max(window.innerHeight / 2 - 150, 20) + 'px')
             .style('opacity', 0)
             .transition()
-            .duration(300)
+            .duration(200)
             .style('opacity', 1);
     }
     
@@ -605,5 +611,315 @@ export class SceneUtils {
         if (createLegend) {
             createLegend(breakdownY + fluidHeight + 15);
         }
+    }
+    
+    /**
+     * Create generic industry legend
+     * @param {Object} sceneGroup - D3 selection for the scene group
+     * @param {number} width - Chart width
+     * @param {Array} industries - Array of industry objects with name and color
+     * @param {number} startY - Y position to start legend
+     * @param {number} animationDuration - Animation duration in ms
+     */
+    static createIndustryLegend(sceneGroup, width, industries, startY, animationDuration) {
+        industries.forEach((industry, i) => {
+            // Center the legend under the chart
+            const legendTotalWidth = (industries.length - 1) * 120; // Space between items
+            const legendStartX = (width - legendTotalWidth) / 2;
+            const x = legendStartX + (i * 120);
+            
+            // Legend square
+            sceneGroup.append('rect')
+                .attr('x', x)
+                .attr('y', startY)
+                .attr('width', 12)
+                .attr('height', 12)
+                .attr('fill', industry.color)
+                .attr('stroke', '#666')
+                .attr('stroke-width', 0.5)
+                .style('opacity', animationDuration > 0 ? 0 : 1)
+                .transition()
+                .delay(animationDuration > 0 ? animationDuration * 1.5 + i * 100 : 0)
+                .duration(animationDuration > 0 ? 300 : 0)
+                .style('opacity', 1);
+            
+            // Legend text
+            sceneGroup.append('text')
+                .attr('x', x + 18)
+                .attr('y', startY + 9)
+                .style('font-size', '11px')
+                .style('fill', '#555')
+                .text(industry.name)
+                .style('opacity', animationDuration > 0 ? 0 : 1)
+                .transition()
+                .delay(animationDuration > 0 ? animationDuration * 1.5 + i * 100 : 0)
+                .duration(animationDuration > 0 ? 300 : 0)
+                .style('opacity', 1);
+        });
+    }
+    
+    /**
+     * Create generic chart setup with scales and axes
+     * @param {Object} sceneGroup - D3 selection for the scene group
+     * @param {number} width - Chart width
+     * @param {number} height - Chart height
+     * @param {Array} populationData - Population data array
+     * @param {Array} gdpData - GDP data array
+     * @param {number} animationDuration - Animation duration in ms
+     * @param {Function} onNoData - Callback when no data is available
+     * @param {Function} onChartReady - Callback when chart is ready with scales
+     */
+    static createChartSetup(sceneGroup, width, height, populationData, gdpData, animationDuration, onNoData, onChartReady) {
+        console.log(`📊 Population: ${populationData.length} points, GDP: ${gdpData.length} points`);
+        
+        if (populationData.length === 0 && gdpData.length === 0) {
+            if (onNoData) onNoData();
+            return;
+        }
+        
+        // Use GDP data as primary when available, fall back to population
+        const primaryData = gdpData.length > 0 ? gdpData : populationData;
+        const isPrimaryPopulation = gdpData.length === 0;
+        
+        if (primaryData.length === 0) {
+            if (onNoData) onNoData();
+            return;
+        }
+        
+        // Chart setup - keep original size, don't make it bigger
+        const chartHeight = height - 200;
+        
+        // Determine actual data range (not theoretical)
+        const allDataYears = [...populationData.map(d => d.year), ...gdpData.map(d => d.year)];
+        const actualStartYear = Math.min(...allDataYears);
+        const actualEndYear = Math.max(...allDataYears);
+        
+        console.log(`📊 Adjusting X-axis: data runs from ${actualStartYear} to ${actualEndYear}`);
+        
+        // Scales
+        const xScale = d3.scaleLinear()
+            .domain([actualStartYear, actualEndYear])
+            .range([0, width]);
+        
+        // Y scale - don't force 0 to start, let it be dynamic based on actual data
+        const allValues = primaryData.map(d => d.value);
+        const minValue = d3.min(allValues);
+        const maxValue = d3.max(allValues);
+        const valueRange = maxValue - minValue;
+        const padding = valueRange * 0.1; // 10% padding
+        
+        const yScale = d3.scaleLinear()
+            .domain([Math.max(0, minValue - padding), maxValue + padding])
+            .nice()
+            .range([chartHeight, 20]);
+        
+        if (onChartReady) {
+            onChartReady({
+                xScale,
+                yScale,
+                chartHeight,
+                primaryData,
+                isPrimaryPopulation,
+                actualStartYear,
+                actualEndYear
+            });
+        }
+    }
+    
+    /**
+     * Create generic "no data" message
+     * @param {Object} sceneGroup - D3 selection for the scene group
+     * @param {number} width - Chart width
+     * @param {number} height - Chart height
+     * @param {string} message - Custom message to display
+     */
+    static createNoDataMessage(sceneGroup, width, height, message = 'No economic data available for this period') {
+        sceneGroup.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '18px')
+            .style('fill', '#666')
+            .text(message);
+    }
+    
+    /**
+     * Generic data lookup function
+     * @param {Array} data - Data array
+     * @param {number} year - Year to look up
+     * @param {string} field - Field name to extract
+     * @returns {*} Value for the year and field, or null if not found
+     */
+    static getDataForYear(data, year, field) {
+        const dataPoint = data.find(d => d.year === year);
+        return dataPoint ? dataPoint[field] : null;
+    }
+    
+    /**
+     * Create generic enhanced tooltip
+     * @param {Event} event - Mouse event
+     * @param {Object} d - Data point
+     * @param {boolean} isPrimaryPopulation - Whether showing population or GDP
+     * @param {Function} getContext - Function to get economic context
+     * @param {Function} getPopulation - Function to get population for year
+     * @param {Function} getGDP - Function to get GDP for year
+     * @param {Function} estimatePopulation - Function to estimate population
+     */
+    static createEnhancedTooltip(event, d, isPrimaryPopulation, getContext, getPopulation, getGDP, estimatePopulation) {
+        const economicContext = getContext(d.year);
+        const indicator = isPrimaryPopulation ? 'Population' : 'GDP';
+        
+        let tooltipContent = `<div style="border-bottom: 1px solid #444; margin-bottom: 8px; padding-bottom: 6px;">`;
+        tooltipContent += `<strong style="color: #d4a574; font-size: 15px;">${d.year} - ${economicContext.period}</strong></div>`;
+        
+        // Get both population and GDP data for this year
+        const populationForYear = getPopulation(d.year);
+        const gdpForYear = getGDP(d.year);
+        
+        // Always show population
+        if (populationForYear) {
+            const popThousands = populationForYear.toFixed(0);
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>Population:</strong> ${popThousands} thousand</div>`;
+        } else {
+            const estimatedPop = estimatePopulation(d.year);
+            const popThousands = estimatedPop.toFixed(0);
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>Population:</strong> ${popThousands} thousand (estimated)</div>`;
+        }
+        
+        // Always show GDP if available
+        if (gdpForYear) {
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>GDP:</strong> £${gdpForYear.toFixed(1)}M (2013 prices)</div>`;
+            
+            // Calculate proper GDP per capita
+            const population = populationForYear || estimatePopulation(d.year);
+            const gdpPerCapita = (gdpForYear * 1000000) / (population * 1000);
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>GDP per capita:</strong> £${gdpPerCapita.toFixed(0)}</div>`;
+        } else {
+            tooltipContent += `<div style="margin-bottom: 8px;"><strong>GDP:</strong> Not available for this period</div>`;
+        }
+        
+        tooltipContent += `<div style="background: rgba(100,50,0,0.3); padding: 6px; border-radius: 3px; margin-bottom: 8px;">`;
+        tooltipContent += `<strong style="color: #FFB74D;">Economic Structure:</strong><br/>`;
+        tooltipContent += `<small>${economicContext.structure}</small></div>`;
+        
+        tooltipContent += `<div style="background: rgba(0,50,100,0.3); padding: 6px; border-radius: 3px; margin-bottom: 8px;">`;
+        tooltipContent += `<strong style="color: #90CAF9;">Key Industries:</strong><br/>`;
+        tooltipContent += `<small>${economicContext.industries}</small></div>`;
+        
+        tooltipContent += `<div style="background: rgba(50,0,100,0.3); padding: 6px; border-radius: 3px; margin-bottom: 8px;">`;
+        tooltipContent += `<strong style="color: #CE93D8;">Social Context:</strong><br/>`;
+        tooltipContent += `<small>${economicContext.social}</small></div>`;
+        
+        tooltipContent += `<div style="font-size: 11px; opacity: 0.8; text-align: center;">`;
+        tooltipContent += `<em>Click data point for detailed analysis</em></div>`;
+        
+        const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
+        tooltip.enter().append('div').attr('class', 'tooltip')
+            .merge(tooltip)
+            .style('position', 'absolute')
+            .style('background', 'rgba(0, 0, 0, 0.9)')
+            .style('color', 'white')
+            .style('padding', '12px')
+            .style('border-radius', '8px')
+            .style('font-size', '13px')
+            .style('pointer-events', 'none')
+            .style('z-index', 1000)
+            .style('box-shadow', '0 6px 20px rgba(0,0,0,0.4)')
+            .style('border', '1px solid #333')
+            .style('max-width', '320px')
+            .style('line-height', '1.5')
+            .html(tooltipContent)
+            .style('left', Math.min(event.pageX + 15, window.innerWidth - 340) + 'px')
+            .style('top', Math.max(event.pageY - 10, 10) + 'px')
+            .style('opacity', 0)
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
+    }
+    
+    /**
+     * Prepare economic structure data with generic logic
+     * @param {Array} data - Raw data array
+     * @param {Function} getPeriodForYear - Function to get period for a year
+     * @param {Function} getIndustriesForPeriod - Function to get industries for a period
+     * @param {number} interval - Year interval for data points (default: 5)
+     * @returns {Array} Array of time points with industry data
+     */
+    static prepareEconomicStructureData(data, getPeriodForYear, getIndustriesForPeriod, interval = 5) {
+        // Get the data range for the breakdown
+        const availableYears = data
+            .filter(d => d.population !== null || d.gdpReal !== null)
+            .map(d => d.year);
+        
+        if (availableYears.length === 0) return [];
+        
+        const actualStartYear = Math.min(...availableYears);
+        const actualEndYear = Math.max(...availableYears);
+        
+        // Create time-based data points - every interval years for stable tooltips
+        const timePoints = [];
+        for (let year = actualStartYear; year <= actualEndYear; year += interval) {
+            const period = getPeriodForYear(year);
+            const industries = getIndustriesForPeriod(period);
+            const agriculture = industries.find(i => i.key === 'agriculture')?.percentage || 0;
+            const crafts = industries.find(i => i.key === 'crafts')?.percentage || 0;
+            const services = industries.find(i => i.key === 'services')?.percentage || 0;
+            timePoints.push({ year, agriculture, crafts, services });
+        }
+        
+        // Add final year if not included
+        if ((actualEndYear - actualStartYear) % interval !== 0) {
+            const finalYear = actualEndYear;
+            const period = getPeriodForYear(finalYear);
+            const industries = getIndustriesForPeriod(period);
+            const agriculture = industries.find(i => i.key === 'agriculture')?.percentage || 0;
+            const crafts = industries.find(i => i.key === 'crafts')?.percentage || 0;
+            const services = industries.find(i => i.key === 'services')?.percentage || 0;
+            timePoints.push({ year: finalYear, agriculture, crafts, services });
+        }
+        
+        return timePoints;
+    }
+    
+    /**
+     * Create generic industry breakdown tooltip
+     * @param {Event} event - Mouse event
+     * @param {Object} data - Data object with industry percentages
+     * @param {Array} colors - Array of colors for each industry
+     * @param {Array} names - Array of names for each industry
+     * @param {Array} fields - Array of field names in data object (default: ['agriculture', 'crafts', 'services'])
+     */
+    static createIndustryBreakdownTooltip(event, data, colors, names, fields = ['agriculture', 'crafts', 'services']) {
+        const tooltip = d3.select('body').selectAll('.tooltip').data([0]);
+        tooltip.enter().append('div').attr('class', 'tooltip')
+            .merge(tooltip)
+            .style('position', 'absolute')
+            .style('background', 'rgba(0, 0, 0, 0.9)')
+            .style('color', 'white')
+            .style('padding', '10px')
+            .style('border-radius', '6px')
+            .style('font-size', '12px')
+            .style('pointer-events', 'none')
+            .style('z-index', 1000)
+            .style('box-shadow', '0 4px 12px rgba(0,0,0,0.3)')
+            .style('border', '1px solid #333')
+            .style('max-width', '200px')
+            .style('line-height', '1.4');
+        
+        let tooltipContent = `<div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #444; padding-bottom: 4px;">`;
+        tooltipContent += `Year: ${data.year}</div>`;
+        
+        // Dynamically generate tooltip content based on fields
+        fields.forEach((field, i) => {
+            tooltipContent += `<div style="margin-bottom: 4px;"><span style="color: ${colors[i]}">●</span> ${names[i]}: ${data[field]}%</div>`;
+        });
+        
+        tooltip.html(tooltipContent)
+            .style('left', Math.min(event.pageX + 15, window.innerWidth - 220) + 'px')
+            .style('top', Math.max(event.pageY - 10, 10) + 'px')
+            .style('opacity', 0)
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
     }
 } 
