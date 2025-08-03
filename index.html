@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK Economic Millennium Story</title>
+    <link rel="stylesheet" href="src/css/styles.css">
+    <meta name="description" content="Interactive visualization of UK's millennium of macroeconomic data">
+</head>
+<body>
+    <header>
+        <h1>A Millennium of UK Economic History</h1>
+        <nav id="scene-navigation" aria-label="Scene navigation">
+            <!-- Navigation will be populated by JavaScript -->
+        </nav>
+    </header>
+    
+    <main>
+        <section id="visualization-container" role="main" aria-live="polite">
+            <!-- D3 visualizations will be rendered here -->
+            <div id="loading">
+                <h2>Loading UK Economic Data...</h2>
+                <p>Preparing 1000+ years of economic history for visualization.</p>
+            </div>
+        </section>
+        
+        <!-- Tooltip for data points -->
+        <div id="tooltip" style="position: absolute; opacity: 0; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; z-index: 1000;"></div>
+        
+        <aside id="annotation-panel" role="complementary">
+            <h2>About This Visualization</h2>
+            <p>Explore 1000+ years of UK economic history through interactive data visualization.</p>
+        </aside>
+    </main>
+    
+    <footer>
+        <p>Data source: Bank of England - A Millennium of Macroeconomic Data</p>
+        <p>Created with D3.js | <a href="https://github.com">View Source</a></p>
+    </footer>
+    
+    <!-- D3 and dependencies -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+    
+    <!-- Application scripts -->
+    <script src="src/js/main.js" type="module"></script>
+</body>
+</html>

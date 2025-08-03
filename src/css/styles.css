@@ -1,0 +1,616 @@
+/* UK Economic Millennium Story - Main Styles */
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fafafa;
+}
+
+/* Layout */
+header {
+    background: #1f4e79;
+    color: white;
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}
+
+main {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+}
+
+footer a {
+    color: #d4a574;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Visualization container */
+#visualization-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 1rem; /* Reduced from 2rem to bring chart closer to header */
+    min-height: 800px; /* Increased to match new canvas height */
+}
+
+#loading {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+}
+
+#loading h2 {
+    color: #1f4e79;
+    margin-bottom: 1rem;
+}
+
+/* Navigation */
+#scene-navigation {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.nav-button {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.nav-button:hover,
+.nav-button.active {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-1px);
+}
+
+/* Annotations */
+#annotation-panel {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    height: fit-content;
+    position: sticky;
+    top: 120px;
+}
+
+#annotation-panel h2 {
+    color: #1f4e79;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.annotation {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-left: 4px solid #1f4e79;
+    background: #f8f9fa;
+    border-radius: 0 4px 4px 0;
+}
+
+.annotation h3 {
+    color: #1f4e79;
+    margin-bottom: 0.5rem;
+}
+
+/* D3 specific styles */
+.axis {
+    font-size: 12px;
+}
+
+.axis-label {
+    font-size: 14px;
+    font-weight: bold;
+    fill: #333;
+}
+
+.line {
+    fill: none;
+    stroke-width: 2px;
+}
+
+.line-gdp {
+    stroke: #1f4e79;
+}
+
+.line-inflation {
+    stroke: #ff6b6b;
+}
+
+.line-population {
+    stroke: #51cf66;
+}
+
+.tooltip {
+    position: absolute;
+    padding: 10px;
+    background: rgba(0,0,0,0.9);
+    color: white;
+    border-radius: 4px;
+    pointer-events: none;
+    font-size: 12px;
+    z-index: 1000;
+    max-width: 200px;
+}
+
+.dot {
+    r: 4;
+    opacity: 0.7;
+}
+
+.dot:hover {
+    r: 6;
+    opacity: 1;
+}
+
+/* Scene transitions */
+.scene-enter {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.scene-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.scene-exit {
+    opacity: 1;
+}
+
+.scene-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    main {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+    
+    #annotation-panel {
+        position: static;
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.5rem;
+    }
+    
+    #scene-navigation {
+        padding: 0 1rem;
+    }
+    
+    .nav-button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    #visualization-container {
+        padding: 1rem;
+    }
+    
+    #annotation-panel {
+        padding: 1rem;
+    }
+}
+
+/* Scene-specific styles */
+
+/* Scene 1: Medieval Baseline */
+.scene-medieval .timeline-background {
+    fill: #f0f0f0;
+    stroke: #ccc;
+    stroke-width: 1;
+}
+
+.scene-medieval .data-point {
+    fill: #8B4513;
+    stroke: none;
+    cursor: pointer;
+}
+
+.scene-medieval .data-point:hover {
+    fill: #A0522D;
+    r: 4;
+}
+
+.scene-medieval .population-line {
+    fill: none;
+    stroke: #8B4513;
+    stroke-width: 2;
+}
+
+.scene-medieval .population-point {
+    fill: #8B4513;
+    stroke: white;
+    stroke-width: 1;
+    cursor: pointer;
+}
+
+.scene-medieval .population-point:hover {
+    fill: #A0522D;
+    r: 5;
+}
+
+.scene-medieval .trend-line {
+    stroke: #d62d20;
+    stroke-width: 1;
+    stroke-dasharray: 5,5;
+    opacity: 0.7;
+}
+
+.scene-medieval .growth-annotation {
+    font-size: 11px;
+    font-weight: bold;
+    fill: #d62d20;
+}
+
+.scene-medieval .annotation-line {
+    stroke-width: 1;
+    stroke-dasharray: 3,3;
+    opacity: 0.6;
+}
+
+.scene-medieval .annotation-year {
+    font-size: 11px;
+    font-weight: bold;
+    text-anchor: middle;
+}
+
+.scene-medieval .annotation-event {
+    font-size: 10px;
+    fill: #444;
+    text-anchor: middle;
+}
+
+.scene-medieval .scene-title {
+    font-size: 20px;
+    font-weight: bold;
+    fill: #1f4e79;
+    text-anchor: middle;
+}
+
+.scene-medieval .scene-subtitle {
+    font-size: 14px;
+    fill: #666;
+    text-anchor: middle;
+}
+
+.scene-medieval .data-quality {
+    font-size: 12px;
+    text-anchor: end;
+}
+
+.scene-medieval .timeline-label {
+    font-size: 12px;
+    fill: #666;
+    text-anchor: middle;
+}
+
+.scene-medieval .axis {
+    font-size: 12px;
+}
+
+.scene-medieval .axis text {
+    fill: #333;
+}
+
+.scene-medieval .axis path,
+.scene-medieval .axis line {
+    fill: none;
+    stroke: #333;
+    shape-rendering: crispEdges;
+}
+
+/* Historical event colors */
+.scene-medieval .devastating {
+    stroke: #d62d20;
+    fill: #d62d20;
+}
+
+.scene-medieval .positive {
+    stroke: #2d7d20;
+    fill: #2d7d20;
+}
+
+.scene-medieval .moderate {
+    stroke: #666;
+    fill: #666;
+}
+
+/* Tooltip enhancements */
+.tooltip {
+    font-family: Arial, sans-serif;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.tooltip strong {
+    color: #d4a574;
+}
+
+/* Enhanced tooltip styling */
+.tooltip {
+    max-width: 250px;
+    word-wrap: break-word;
+}
+
+/* Alternative data points */
+.scene-medieval .data-point-alt {
+    fill: #8B4513;
+    stroke: white;
+    stroke-width: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scene-medieval .data-point-alt:hover {
+    fill: #A0522D;
+    r: 6;
+    stroke-width: 2;
+}
+
+/* Chart subtitle styling */
+.scene-medieval .chart-subtitle {
+    font-size: 14px;
+    fill: #666;
+    text-anchor: middle;
+    font-style: italic;
+}
+
+/* No data message styling */
+.scene-medieval .no-data-message {
+    text-anchor: middle;
+    fill: #999;
+}
+
+/* Debug info styling */
+.debug-info {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 9999;
+    max-width: 300px;
+    display: none;
+}
+
+.debug-info.visible {
+    display: block;
+}
+
+/* Enhanced Scene 1 styles */
+.scene-medieval .main-trend-line {
+    fill: none;
+    stroke-width: 3;
+    opacity: 0.9;
+}
+
+.scene-medieval .story-point {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scene-medieval .story-point:hover {
+    r: 4;
+    stroke-width: 2;
+    opacity: 0.8;
+}
+
+.scene-medieval .event-marker {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scene-medieval .event-marker:hover circle {
+    r: 10;
+    stroke-width: 3;
+}
+
+.scene-medieval .future-preview {
+    cursor: pointer;
+}
+
+.scene-medieval .future-preview:hover text {
+    fill: #FF8A65;
+}
+
+/* Tooltip enhancements for detailed stories */
+.detailed-tooltip {
+    font-family: 'Georgia', serif;
+    line-height: 1.5;
+    backdrop-filter: blur(10px);
+}
+
+.event-story-tooltip {
+    font-family: 'Georgia', serif;
+    line-height: 1.6;
+    backdrop-filter: blur(15px);
+}
+
+.event-story-tooltip h2, .event-story-tooltip h3 {
+    margin: 0;
+}
+
+.event-story-tooltip button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Stagnation story styles */
+.scene-medieval .stagnation-line {
+    stroke: #999;
+    stroke-width: 2;
+    stroke-dasharray: 5,5;
+    fill: none;
+    opacity: 0.7;
+}
+
+/* Animation keyframes */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.scene-medieval .event-marker circle {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.scene-medieval .future-preview text:last-child {
+    animation: pulse 3s ease-in-out infinite;
+}
+
+/* Event tooltip styling */
+.event-tooltip {
+    font-family: 'Georgia', serif;
+    line-height: 1.4;
+    backdrop-filter: blur(10px);
+}
+
+.event-tooltip div:first-child {
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+}
+
+/* Industry breakdown visualization styling */
+.breakdown-title {
+    font-family: 'Georgia', serif;
+}
+
+.century-label {
+    font-family: 'Arial', sans-serif;
+    font-weight: 500;
+}
+
+.industry-segment {
+    transition: opacity 0.2s ease;
+}
+
+.industry-segment:hover {
+    opacity: 0.8;
+    stroke-width: 1px !important;
+}
+
+.industry-tooltip {
+    font-family: 'Arial', sans-serif;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Fluid industry area chart styling */
+.industry-area {
+    transition: opacity 0.3s ease, stroke-width 0.2s ease;
+}
+
+.industry-area:hover {
+    opacity: 1 !important;
+    stroke-width: 1px !important;
+    filter: brightness(1.1);
+}
+
+.industry-area.agriculture {
+    fill: #8B4513;
+}
+
+.industry-area.crafts {
+    fill: #4682B4;
+}
+
+.industry-area.services {
+    fill: #9370DB;
+}
+
+/* Scene 2 - Great Awakening styling */
+.scene-awakening .gdp-trend-line {
+    filter: drop-shadow(0 2px 4px rgba(25, 118, 210, 0.3));
+}
+
+.scene-awakening .population-trend-line {
+    filter: drop-shadow(0 2px 4px rgba(233, 30, 99, 0.3));
+}
+
+.scene-awakening .gdp-point {
+    transition: r 0.2s ease;
+}
+
+.scene-awakening .gdp-point:hover {
+    r: 5;
+    stroke-width: 2px;
+}
+
+.scene-awakening .population-point {
+    transition: r 0.2s ease;
+}
+
+.scene-awakening .population-point:hover {
+    r: 5;
+    stroke-width: 2px;
+}
+
+.scene-awakening .historical-marker circle {
+    animation: pulse 2.5s ease-in-out infinite;
+}
+
+.scene-awakening .industry-area-awakening {
+    transition: opacity 0.3s ease, stroke-width 0.2s ease;
+}
+
+.scene-awakening .industry-area-awakening:hover {
+    opacity: 1 !important;
+    stroke-width: 1px !important;
+    filter: brightness(1.1);
+}
