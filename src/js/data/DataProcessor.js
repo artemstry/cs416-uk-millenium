@@ -43,8 +43,10 @@ export class MillenniumDataProcessor {
         try {
             console.log('📊 Loading UK Millennium Dataset...');
             
-            // Load the headlines CSV file
-            const csvData = await d3.csv('src/data/raw/millenniumofdata_v3_headlines.csv');
+            // Load the headlines CSV file - use different paths for dev vs production
+            const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const dataPath = isDevelopment ? 'src/data/raw/millenniumofdata_v3_headlines.csv' : 'data/raw/millenniumofdata_v3_headlines.csv';
+            const csvData = await d3.csv(dataPath);
             
             console.log(`✅ Loaded ${csvData.length} rows of data`);
             console.log('📋 Available columns:', Object.keys(csvData[0]));
