@@ -44,7 +44,7 @@ export class MillenniumDataProcessor {
             console.log('📊 Loading UK Millennium Dataset...');
             
             // Load the headlines CSV file
-            const csvData = await d3.csv('src/data/raw/millenniumofdata_v3_headlines.csv');
+            const csvData = await d3.csv('data/raw/millenniumofdata_v3_headlines.csv');
             
             console.log(`✅ Loaded ${csvData.length} rows of data`);
             console.log('📋 Available columns:', Object.keys(csvData[0]));
