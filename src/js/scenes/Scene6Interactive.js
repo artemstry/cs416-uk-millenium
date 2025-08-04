@@ -1,8 +1,9 @@
 /**
  * Scene 6: Interactive Exploration (All Periods)
  * Allows users to explore the full millennium dataset interactively
- * USING SAME APPROACH AS SCENE 1 BUT WITH INTERACTIVE CONTROLS
  */
+
+import { SceneUtils } from '../utils/SceneUtils.js';
 
 export class Scene6Interactive {
     constructor(sceneGroup, data, parameters) {
@@ -13,20 +14,20 @@ export class Scene6Interactive {
         
         // All period data combined (with null safety)
         if (!data) {
-            console.error('❌ Scene6Interactive: Data not loaded yet!', data);
-            throw new Error('Data not available for Interactive scene. Please wait for data to load.');
-        }
-        
-        // Try different data sources to get the full dataset
-        if (data.raw) {
-            this.allData = data.raw;
-        } else if (data.enriched) {
-            this.allData = data.enriched;
-        } else if (data.periods) {
-            this.allData = Object.values(data.periods).flatMap(period => period.data);
+            console.warn('⚠️ Scene6Interactive: Data not loaded yet, will show loading message');
+            this.allData = [];
         } else {
-            console.error('❌ Scene6Interactive: No valid data source found!', data);
-            throw new Error('No valid data source found for Interactive scene.');
+            // Try different data sources to get the full dataset
+            if (data.raw) {
+                this.allData = data.raw;
+            } else if (data.enriched) {
+                this.allData = data.enriched;
+            } else if (data.periods) {
+                this.allData = Object.values(data.periods).flatMap(period => period.data);
+            } else {
+                console.warn('⚠️ Scene6Interactive: No valid data source found, will show loading message');
+                this.allData = [];
+            }
         }
         
         // Chart dimensions - same as Scene 1
@@ -38,6 +39,20 @@ export class Scene6Interactive {
         this.selectedMetric = 'gdpReal';
         this.selectedPeriod = 'all';
         this.showPopulation = true;
+        
+        // Historical events for positioning
+        this.historicalEvents = [
+            { year: 1348, event: 'Black Death' },
+            { year: 1492, event: 'Age of Discovery' },
+            { year: 1694, event: 'Bank of England' },
+            { year: 1769, event: 'Industrial Revolution' },
+            { year: 1825, event: 'First Steam Railway' },
+            { year: 1851, event: 'Great Exhibition' },
+            { year: 1914, event: 'World War I' },
+            { year: 1929, event: 'Great Depression' },
+            { year: 1945, event: 'Post-War Boom' },
+            { year: 1986, event: 'Big Bang' }
+        ];
         
         console.log(`🔍 Scene 6 Interactive: ${this.allData.length} years of data across all periods`);
     }
@@ -150,8 +165,8 @@ export class Scene6Interactive {
             return;
         }
         
-        // Chart setup - use entire vertical space, remove millennium summary
-        const chartHeight = this.height + 50; // Make Y-axis 50+ pixels taller
+        // Chart setup - reduce height by 10% and add space for economic structure
+        const chartHeight = this.height * 0.9; // Reduce by 10%
         
         // Determine actual data range
         const allDataYears = [...populationData.map(d => d.year), ...gdpData.map(d => d.year)];
@@ -315,18 +330,88 @@ export class Scene6Interactive {
     }
     
     addInteractiveStoryPoints(isPrimaryPopulation) {
-        // Key events from across all periods
+        // 10 Most Important Historical Events Across the Millennium
         const historicalEvents = [
-            // Medieval
-            { year: 1348, event: 'Black Death', story: 'Plague devastates population, reshaping economy and society', economicEffect: 'Labor scarcity drives wage increases and social change', impact: 'devastating', y: 80 },
-            // Great Awakening
-            { year: 1600, event: 'East India Company', story: 'Joint-stock company pioneers modern corporate structure', economicEffect: 'Global trade expansion and capital accumulation', impact: 'positive', y: 100 },
-            // Industrial
-            { year: 1825, event: 'First Railway', story: 'Railway age begins, revolutionizing transport and trade', economicEffect: 'Reduced costs, mass markets, industrial growth', impact: 'positive', y: 70 },
-            // Crisis
-            { year: 1929, event: 'Great Depression', story: 'Global economic collapse challenges existing theories', economicEffect: 'Mass unemployment, government intervention required', impact: 'devastating', y: 90 },
-            // Modern
-            { year: 1990, event: 'World Wide Web', story: 'Internet revolution transforms global economy', economicEffect: 'Digital services, globalization, productivity growth', impact: 'positive', y: 110 }
+            {
+                year: 1348,
+                event: 'Black Death',
+                story: 'The Black Death devastated Europe, killing 30-60% of the population and fundamentally altering the economic and social structure of medieval society.',
+                story2: 'The plague created severe labor shortages, leading to the end of serfdom and the rise of wage labor. It marked the beginning of the end of the medieval economic system.',
+                economicEffect: 'Population fell by 30-40%, labor costs rose dramatically, and the feudal system began to collapse. Wages increased as labor became scarce.',
+                longTermImpact: 'The Black Death accelerated the transition from feudalism to capitalism and created the conditions for the Renaissance and early modern economy.'
+            },
+            {
+                year: 1492,
+                event: 'Age of Discovery',
+                story: 'Christopher Columbus\'s voyage to the Americas opened the Age of Discovery, transforming global trade and creating new economic opportunities.',
+                story2: 'The discovery of the New World led to the establishment of global trade networks, the rise of maritime powers, and the beginning of European colonialism.',
+                economicEffect: 'New trade routes opened, precious metals flowed into Europe, and the foundations of global capitalism were established.',
+                longTermImpact: 'The Age of Discovery created the first truly global economy and set the stage for Britain\'s future maritime and imperial dominance.'
+            },
+            {
+                year: 1694,
+                event: 'Bank of England',
+                story: 'The founding of the Bank of England marked the beginning of modern central banking and financial innovation.',
+                story2: 'The Bank was created to fund William III\'s war with France, but it became the foundation of Britain\'s financial system and global financial leadership.',
+                economicEffect: 'Interest rates fell from 10%+ to 3-5%, government borrowing became possible, and financial markets developed rapidly.',
+                longTermImpact: 'The Bank of England established London as a global financial center and created the foundation for modern banking and finance.'
+            },
+            {
+                year: 1769,
+                event: 'Industrial Revolution',
+                story: 'James Watt\'s improved steam engine marked the beginning of the Industrial Revolution, the most significant economic transformation in human history.',
+                story2: 'The steam engine powered factories, railways, and ships, creating unprecedented economic growth and transforming society from agricultural to industrial.',
+                economicEffect: 'Productivity exploded, GDP grew 20x, and Britain became the world\'s first industrial superpower. Real wages began to rise for the first time in centuries.',
+                longTermImpact: 'The Industrial Revolution created the modern world economy and established the pattern of sustained economic growth that continues today.'
+            },
+            {
+                year: 1825,
+                event: 'First Steam Railway',
+                story: 'The Stockton and Darlington Railway opened, marking the beginning of the railway age and revolutionizing transportation.',
+                story2: 'Railways connected markets, reduced transport costs, and accelerated industrialization. They created new industries and transformed urban development.',
+                economicEffect: 'Transport costs fell by 90%, markets expanded dramatically, and new industries like steel and coal boomed. Railway manias created investment bubbles.',
+                longTermImpact: 'Railways created the modern transport infrastructure and accelerated the Industrial Revolution, making Britain the workshop of the world.'
+            },
+            {
+                year: 1851,
+                event: 'Great Exhibition',
+                story: 'The Great Exhibition showcased Britain\'s industrial might and marked the peak of Victorian economic confidence.',
+                story2: 'The Crystal Palace exhibition displayed Britain\'s technological and industrial leadership to the world, celebrating the success of the Industrial Revolution.',
+                economicEffect: 'The exhibition boosted British exports, attracted foreign investment, and demonstrated Britain\'s global economic leadership.',
+                longTermImpact: 'The Great Exhibition symbolized Britain\'s position as the world\'s leading industrial power and global economic superpower.'
+            },
+            {
+                year: 1914,
+                event: 'World War I',
+                story: 'World War I shattered the old economic order and marked the beginning of the modern era of government intervention in the economy.',
+                story2: 'The war destroyed the gold standard, led to massive government spending, and created the conditions for the Great Depression and modern economic management.',
+                economicEffect: 'Government spending exploded from 10% to 40%+ of GDP, inflation soared, and the international economic order collapsed.',
+                longTermImpact: 'World War I ended Britain\'s economic dominance and created the conditions for the modern welfare state and Keynesian economics.'
+            },
+            {
+                year: 1929,
+                event: 'Great Depression',
+                story: 'The Great Depression was the worst economic crisis in modern history, leading to mass unemployment and economic collapse.',
+                story2: 'The depression exposed the failures of laissez-faire economics and led to the development of Keynesian economics and modern economic management.',
+                economicEffect: 'Unemployment reached 15%+, GDP fell by 20%, and the gold standard was abandoned. Economic confidence was shattered.',
+                longTermImpact: 'The Great Depression led to the modern welfare state, government intervention in the economy, and the Bretton Woods system.'
+            },
+            {
+                year: 1945,
+                event: 'Post-War Boom',
+                story: 'The post-war period saw unprecedented economic growth and the establishment of the modern welfare state.',
+                story2: 'Government intervention, the Bretton Woods system, and technological innovation created the longest period of sustained economic growth in history.',
+                economicEffect: 'GDP grew rapidly, unemployment fell to 2%, and living standards improved dramatically. The welfare state was established.',
+                longTermImpact: 'The post-war boom created the modern consumer society and established the pattern of government intervention in the economy.'
+            },
+            {
+                year: 1986,
+                event: 'Big Bang',
+                story: 'The Big Bang deregulation of London\'s financial markets transformed the City of London into a global financial center.',
+                story2: 'The abolition of fixed commissions, the end of the separation between brokers and jobbers, and the opening of markets to foreign competition revolutionized British finance.',
+                economicEffect: 'Financial services employment doubled, foreign investment poured in, and London became the world\'s leading financial center alongside New York.',
+                longTermImpact: 'The Big Bang established London as a global financial hub and made financial services the cornerstone of the British economy.'
+            }
         ];
         
         // Filter events that fall within our data range
@@ -335,36 +420,15 @@ export class Scene6Interactive {
             return event.year >= domain[0] && event.year <= domain[1];
         });
         
-        // Add event markers
-        const eventGroup = this.sceneGroup.selectAll('.historical-event')
-            .data(relevantEvents)
-            .enter().append('g')
-            .attr('class', 'historical-event')
-            .style('cursor', 'pointer');
-        
-        // Event circles
-        eventGroup.append('circle')
-            .attr('cx', d => this.xScale(d.year))
-            .attr('cy', d => d.y)
-            .attr('r', 6) // Smaller for overview
-            .attr('fill', d => this.getEventColor(d.impact))
-            .attr('stroke', 'white')
-            .attr('stroke-width', 2)
-            .style('opacity', 0.9);
-        
-        // Event labels
-        eventGroup.append('text')
-            .attr('x', d => this.xScale(d.year))
-            .attr('y', d => d.y - 12)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '10px')
-            .style('font-weight', 'bold')
-            .style('fill', '#333')
-            .text(d => d.event);
-        
-        // Add interactivity - click only, no tooltip on hover
-        eventGroup
-            .on('click', (event, d) => this.showEventStory(d));
+        // Create event markers with Scene 6 specific styling (dashed lines go to X-axis)
+        const chartHeight = this.height * 0.9; // Match the reduced chart height
+        this.createScene6EventMarkers(
+            this.sceneGroup,
+            relevantEvents,
+            this.xScale,
+            chartHeight,
+            this.animationDuration
+        );
     }
     
     addMillenniumSummary() {
@@ -387,14 +451,135 @@ export class Scene6Interactive {
             .text(`${totalYears} years of data | ${firstYear}-${lastYear} | From medieval agriculture to digital services`);
     }
     
-    getEventColor(impact) {
-        const colors = {
-            'devastating': '#d32f2f',
-            'social': '#f57c00',
-            'recovery': '#388e3c',
-            'positive': '#1976d2'
+    getEventColor(eventIndex) {
+        // Vibrant color palette for historical events
+        const colors = [
+            '#FF6B6B', // Red
+            '#4ECDC4', // Teal
+            '#45B7D1', // Blue
+            '#96CEB4', // Green
+            '#FFEAA7', // Yellow
+            '#DDA0DD', // Plum
+            '#98D8C8', // Mint
+            '#F7DC6F', // Gold
+            '#BB8FCE', // Purple
+            '#85C1E9'  // Light Blue
+        ];
+        return colors[eventIndex % colors.length];
+    }
+
+    createScene6EventMarkers(sceneGroup, events, xScale, height, animationDuration) {
+        events.forEach((event, i) => {
+            const x = xScale(event.year);
+            const y = this.getEventYPosition(event.year, height);
+            const markerColor = this.getEventColor(i);
+
+            // Add vertical line - go all the way to X-axis for Scene 6
+            sceneGroup.append('line')
+                .attr('class', 'event-line')
+                .attr('x1', x)
+                .attr('y1', y)
+                .attr('x2', x)
+                .attr('y2', height) // Go all the way to X-axis
+                .attr('stroke', markerColor)
+                .attr('stroke-width', 2)
+                .attr('stroke-dasharray', '5,5')
+                .style('opacity', animationDuration > 0 ? 0 : 1)
+                .transition()
+                .delay(animationDuration > 0 ? animationDuration * 1.5 + i * 150 : 0)
+                .duration(animationDuration > 0 ? 250 : 0)
+                .style('opacity', 0.6);
+            
+            // Add event circle
+            const eventCircle = sceneGroup.append('circle')
+                .attr('class', 'event-marker')
+                .attr('cx', x)
+                .attr('cy', y)
+                .attr('r', 0)
+                .attr('fill', markerColor)
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2)
+                .style('cursor', 'pointer')
+                .style('opacity', animationDuration > 0 ? 0 : 1)
+                .style('filter', `drop-shadow(0 0 4px ${markerColor})`)
+                .on('mouseover', (e) => {
+                    // Show detailed story tooltip immediately on mouseover
+                    this.showEventStory(event);
+                    eventCircle.transition().duration(200).attr('r', 8);
+                })
+                .on('mouseout', () => {
+                    // Hide tooltip immediately on mouseout
+                    this.hideTooltip();
+                    eventCircle.transition().duration(200).attr('r', 6);
+                });
+            
+            eventCircle.transition()
+                .delay(animationDuration > 0 ? animationDuration * 1.5 + i * 150 : 0)
+                .duration(animationDuration > 0 ? 250 : 0)
+                .attr('r', 6)
+                .style('opacity', 1);
+            
+            // Add event label
+            this.createScene6EventLabel(sceneGroup, event, x, y, markerColor, animationDuration, i);
+        });
+    }
+
+    createScene6EventLabel(sceneGroup, event, x, y, color, animationDuration, index) {
+        const labelGroup = sceneGroup.append('g')
+            .attr('class', 'event-label-group')
+            .style('opacity', animationDuration > 0 ? 0 : 1);
+        
+        const labelText = `${event.year} - ${event.event}`;
+        const labelWidth = labelText.length * 5.5;
+        const labelHeight = 16;
+        
+        // Background rectangle
+        labelGroup.append('rect')
+            .attr('x', x + 8)
+            .attr('y', y - 22)
+            .attr('width', labelWidth)
+            .attr('height', labelHeight)
+            .attr('fill', 'rgba(255, 255, 255, 0.9)')
+            .attr('stroke', color)
+            .attr('stroke-width', 1)
+            .attr('rx', 3);
+        
+        // Text label
+        labelGroup.append('text')
+            .attr('class', 'event-label')
+            .attr('x', x + 12)
+            .attr('y', y - 10)
+            .attr('text-anchor', 'start')
+            .style('font-size', '10px')
+            .style('font-weight', 'bold')
+            .style('fill', color)
+            .text(labelText);
+        
+        labelGroup.transition()
+            .delay(animationDuration > 0 ? animationDuration * 1.5 + index * 150 + 100 : 0)
+            .duration(animationDuration > 0 ? 250 : 0)
+            .style('opacity', 1);
+    }
+
+    getEventYPosition(year, height) {
+        // Vary the height to prevent overlap - use 3 levels with special handling for overlapping events
+        const eventIndex = this.historicalEvents.findIndex(e => e.year === year);
+        const level = eventIndex % 3;
+        const baseY = height * 0.2; // Start at 20% of chart height
+        const levelSpacing = height * 0.25; // 25% spacing between levels
+        
+        // Move specific overlapping events down by different amounts
+        const offsets = {
+            1929: 20,
+            1940: 20,
+            1945: 20,
+            1914: 45 // Move 1914 down by 45 pixels
         };
-        return colors[impact] || '#666';
+        const additionalOffset = offsets[year] || 0;
+        
+        return baseY + (level * levelSpacing) + additionalOffset;
+        
+        return baseY + (level * levelSpacing);
     }
     
     getPopulationForYear(year) {
@@ -412,25 +597,26 @@ export class Scene6Interactive {
         tooltip.enter().append('div').attr('class', 'tooltip')
             .merge(tooltip)
             .style('position', 'absolute')
-            .style('background', 'rgba(0, 0, 0, 0.8)')
+            .style('background', 'rgba(0, 0, 0, 0.9)')
             .style('color', 'white')
-            .style('padding', '8px')
-            .style('border-radius', '4px')
-            .style('font-size', '12px')
+            .style('padding', '12px')
+            .style('border-radius', '8px')
+            .style('font-size', '13px')
             .style('pointer-events', 'none')
             .style('z-index', 1000)
-            .style('box-shadow', '0 4px 12px rgba(0,0,0,0.3)')
-            .style('border', '2px solid white')
-            .style('max-width', '250px')
-            .style('line-height', '1.4');
+            .style('box-shadow', '0 6px 20px rgba(0,0,0,0.4)')
+            .style('border', `2px solid ${this.getEventColor(historicalEvent.year % 10)}`)
+            .style('max-width', '300px')
+            .style('line-height', '1.5');
         
-        let tooltipContent = `<div style="font-weight: bold; margin-bottom: 6px;">${historicalEvent.year} - ${historicalEvent.event}</div>`;
+        let tooltipContent = `<div style="border-bottom: 1px solid ${this.getEventColor(historicalEvent.year % 10)}; margin-bottom: 8px; padding-bottom: 6px;">`;
+        tooltipContent += `<strong style="color: ${this.getEventColor(historicalEvent.year % 10)}; font-size: 15px;">${historicalEvent.year} - ${historicalEvent.event}</strong></div>`;
         tooltipContent += `<div style="margin-bottom: 8px; font-size: 12px;">${historicalEvent.story}</div>`;
-        tooltipContent += `<div style="font-size: 11px; font-style: italic; opacity: 0.9;">Impact: ${historicalEvent.economicEffect}</div>`;
-        tooltipContent += `<div style="text-align: center; margin-top: 6px; font-size: 10px; opacity: 0.8;">Click event marker for full story</div>`;
+        tooltipContent += `<div style="background: rgba(255,255,255,0.1); padding: 6px; border-radius: 4px; margin-bottom: 6px; font-size: 11px; font-style: italic;">Economic Impact: ${historicalEvent.economicEffect}</div>`;
+        tooltipContent += `<div style="text-align: center; margin-top: 8px; font-size: 10px; opacity: 0.8;">Click for detailed story</div>`;
         
         tooltip.html(tooltipContent)
-            .style('left', Math.min(event.pageX + 15, window.innerWidth - 270) + 'px')
+            .style('left', Math.min(event.pageX + 15, window.innerWidth - 320) + 'px')
             .style('top', Math.max(event.pageY - 10, 10) + 'px')
             .style('opacity', 0)
             .transition()
@@ -562,55 +748,31 @@ export class Scene6Interactive {
     addIndustryBreakdown() {
         // Create a skinny industry breakdown visualization under the main chart
         const breakdownHeight = 80;
-        const breakdownY = this.height + 80;  // Position below the taller chart
+        const breakdownY = this.height * 0.9 + 100;  // Position below the reduced chart with more space
         
-        // Get the full data range
-        const availableYears = this.allData
-            .filter(d => d.population !== null || d.gdpReal !== null)
-            .map(d => d.year);
+        // Use SceneUtils to create economic structure with proper data
+        const timePoints = SceneUtils.prepareEconomicStructureData(
+            this.allData,
+            (year) => this.getPeriodForYear(year),
+            (period) => this.getIndustriesForPeriod(period),
+            10 // interval for millennium view
+        );
         
-        if (availableYears.length === 0) return;
-        
-        const actualStartYear = Math.min(...availableYears);
-        const actualEndYear = Math.max(...availableYears);
+        if (timePoints.length === 0) return;
         
         // Use the same X-scale as the main chart to ensure proper alignment
         const xScale = this.xScale || d3.scaleLinear()
-            .domain([actualStartYear - 10, Math.max(actualEndYear + 10, 2016)])
+            .domain([Math.min(...timePoints.map(d => d.year)) - 10, Math.max(...timePoints.map(d => d.year)) + 10])
             .range([0, this.width]);
-        
-        // Create a single fluid industry visualization - taller and more detailed
-        const fluidHeight = 100;  // 50% taller
-        
-        // Create time-based data points - every 5 years for stable tooltips
-        const timePoints = [];
-        for (let year = actualStartYear; year <= actualEndYear; year += 5) {
-            timePoints.push({
-                year: year,
-                agriculture: this.getIndustryPercentage(year, 'agriculture'),
-                manufacturing: this.getIndustryPercentage(year, 'manufacturing'),
-                services: this.getIndustryPercentage(year, 'services')
-            });
-        }
-        
-        // Add final year if not included
-        if ((actualEndYear - actualStartYear) % 5 !== 0) {
-            const finalYear = actualEndYear;
-            timePoints.push({
-                year: finalYear,
-                agriculture: this.getIndustryPercentage(finalYear, 'agriculture'),
-                manufacturing: this.getIndustryPercentage(finalYear, 'manufacturing'),
-                services: this.getIndustryPercentage(finalYear, 'services')
-            });
-        }
         
         // Create stacked area chart using D3's stack generator
         const stack = d3.stack()
-            .keys(['agriculture', 'manufacturing', 'services']);
+            .keys(['agriculture', 'crafts', 'services']);
         
         const stackedData = stack(timePoints);
         
         // Create area generator
+        const fluidHeight = 100;  // Height for the economic structure
         const area = d3.area()
             .x(d => xScale(d.data.year))
             .y0(d => breakdownY + fluidHeight - (d[0] / 100) * fluidHeight)
@@ -622,7 +784,7 @@ export class Scene6Interactive {
             .attr('class', 'industry-breakdown');
         
         // Draw each industry layer with consistent colors from Scene 1
-        const industryNames = ['agriculture', 'manufacturing', 'services'];
+        const industryNames = ['agriculture', 'crafts', 'services'];
         const industryColors = ['#8B4513', '#4682B4', '#9370DB'];  // Brown, Steel Blue, Medium Purple
         const industryFullNames = ['Agriculture', 'Manufacturing', 'Services'];
         
@@ -699,7 +861,7 @@ export class Scene6Interactive {
     }
     
     getIndustryPercentage(year, industry) {
-        // Full millennium industry evolution
+        // Full millennium industry evolution with corrected ratios that always sum to 100%
         if (year <= 1500) {
             switch (industry) {
                 case 'agriculture': return 85;
@@ -730,9 +892,9 @@ export class Scene6Interactive {
         } else {
             const progress = (year - 1950) / 66;
             switch (industry) {
-                case 'agriculture': return 5 - (progress * 4); // 5% → 1%
-                case 'manufacturing': return 50 - (progress * 38); // 50% → 12%
-                case 'services': return 45 + (progress * 42); // 45% → 87%
+                case 'agriculture': return Math.max(1, 5 - (progress * 4)); // 5% → 1%
+                case 'manufacturing': return Math.max(12, 50 - (progress * 38)); // 50% → 12%
+                case 'services': return Math.min(87, 45 + (progress * 42)); // 45% → 87%
             }
         }
         return 0;
@@ -797,23 +959,29 @@ export class Scene6Interactive {
             .style('font-size', '15px')
             .style('z-index', 1002)
             .style('box-shadow', '0 10px 30px rgba(0,0,0,0.5)')
-            .style('border', `3px solid ${this.getEventColor(event.impact)}`)
-            .style('max-width', '500px')
+            .style('border', `3px solid ${this.getEventColor(event.year % 10)}`)
+            .style('max-width', '600px')
             .style('text-align', 'center');
         
         tooltip.html(`
-            <div style="border-bottom: 2px solid ${this.getEventColor(event.impact)}; padding-bottom: 12px; margin-bottom: 16px;">
-                <h2 style="color: ${this.getEventColor(event.impact)}; margin: 0; font-size: 24px;">${event.year}</h2>
+            <div style="border-bottom: 2px solid ${this.getEventColor(event.year % 10)}; padding-bottom: 12px; margin-bottom: 16px;">
+                <h2 style="color: ${this.getEventColor(event.year % 10)}; margin: 0; font-size: 24px;">${event.year}</h2>
                 <h3 style="margin: 4px 0 0 0; color: #d4a574;">${event.event}</h3>
             </div>
             <div style="text-align: left; line-height: 1.6; margin-bottom: 16px;">
                 <p>${event.story}</p>
             </div>
+            <div style="text-align: left; line-height: 1.6; margin-bottom: 16px;">
+                <p>${event.story2}</p>
+            </div>
             <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 6px; margin-bottom: 16px; text-align: left;">
                 <strong style="color: #FFB74D;">Economic Impact:</strong><br/>
                 ${event.economicEffect}
             </div>
-
+            <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 6px; margin-bottom: 16px; text-align: left;">
+                <strong style="color: #4ECDC4;">Long-term Impact:</strong><br/>
+                ${event.longTermImpact}
+            </div>
         `)
         .style('opacity', 0)
         .transition()
@@ -895,7 +1063,7 @@ export class Scene6Interactive {
             .attr('text-anchor', 'middle')
             .style('font-size', '16px')
             .style('fill', '#666')
-            .text('Interactive exploration data is being processed...');
+            .text('Loading interactive exploration data...');
     }
     
     renderInteractiveViz() {
@@ -1223,10 +1391,13 @@ export class Scene6Interactive {
     addDualAxisChart(populationData, gdpData) {
         console.log('📊 Adding dual axis chart with GDP and Population...');
         
+        // Use the same reduced chart height as the main chart
+        const chartHeight = this.height * 0.9; // Match the reduced chart height
+        
         // Create secondary Y-axis for population (right side)
         const populationYScale = d3.scaleLog()
             .domain([d3.min(populationData, d => d.value), d3.max(populationData, d => d.value) * 1.1])
-            .range([this.height + 50, 0]) // Match the chart height
+            .range([chartHeight, 0]) // Use reduced chart height
             .nice();
         
         // Add secondary Y-axis (right side)
@@ -1243,7 +1414,7 @@ export class Scene6Interactive {
         this.sceneGroup.append('text')
             .attr('transform', 'rotate(-90)')
             .attr('y', this.width + 40)
-            .attr('x', -(this.height + 50) / 2)
+            .attr('x', -chartHeight / 2)
             .attr('text-anchor', 'middle')
             .style('font-size', '12px')
             .style('fill', '#e74c3c')

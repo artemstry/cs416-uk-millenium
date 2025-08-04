@@ -250,22 +250,25 @@ class NarrativeVisualization {
             } catch (error) {
                 console.error(`🚨 Error rendering scene ${sceneId} (${sceneConfig.title}):`, error);
                 
-                // Show error message instead of breaking everything
-                sceneGroup.append('text')
-                    .attr('x', this.parameters.width / 2)
-                    .attr('y', this.parameters.height / 2)
-                    .attr('text-anchor', 'middle')
-                    .style('font-size', '18px')
-                    .style('fill', 'red')
-                    .text(`⚠️ Error loading ${sceneConfig.title}`);
-                    
-                sceneGroup.append('text')
-                    .attr('x', this.parameters.width / 2)
-                    .attr('y', this.parameters.height / 2 + 30)
-                    .attr('text-anchor', 'middle')
-                    .style('font-size', '14px')
-                    .style('fill', '#666')
-                    .text('Check console for details. Other scenes should work.');
+                // Don't show error message for Scene 6 (Interactive Exploration) - let it handle its own errors
+                if (sceneId !== 6) {
+                    // Show error message instead of breaking everything
+                    sceneGroup.append('text')
+                        .attr('x', this.parameters.width / 2)
+                        .attr('y', this.parameters.height / 2)
+                        .attr('text-anchor', 'middle')
+                        .style('font-size', '18px')
+                        .style('fill', 'red')
+                        .text(`⚠️ Error loading ${sceneConfig.title}`);
+                        
+                    sceneGroup.append('text')
+                        .attr('x', this.parameters.width / 2)
+                        .attr('y', this.parameters.height / 2 + 30)
+                        .attr('text-anchor', 'middle')
+                        .style('font-size', '14px')
+                        .style('fill', '#666')
+                        .text('Check console for details. Other scenes should work.');
+                }
             }
         } else {
             // Fallback to placeholder for scenes not yet implemented
